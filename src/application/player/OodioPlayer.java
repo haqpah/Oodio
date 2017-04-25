@@ -7,6 +7,7 @@ import application.component.ButtonActionType;
 import application.component.ButtonList;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
+import javafx.scene.Node;
 import javafx.scene.layout.Pane;
 import javafx.scene.media.Media;
 import javafx.scene.media.MediaPlayer;
@@ -24,16 +25,62 @@ public final class OodioPlayer
 	private List<Button> buttonList_;
 
 	/**
-	 * Constructor
+	 * Constructor. It is important to note that this constructor comes with baggage.
+	 * <p>
+	 * This constructor will not be tied to the system menu bar. In order to load new media
+	 * into the player tied to the system menu bar, use {@link #newInstanceOfSystemPlayer(Media)
 	 *
 	 * @version 0.0.0.20170423
 	 * @since 0.0
 	 *
 	 * @param media
+	 *            the new media to load
 	 * @throws OodioPlayerException
+	 *             if there was a problem loading the new media
 	 */
 	public OodioPlayer(Media media) throws OodioPlayerException
 	{
+		newInstanceOfSystemPlayer(media);
+	}
+
+	/**
+	 * Effectively loads new media to this player.
+	 * <p>
+	 * In order to do so, the {@link #player_} field must re-instantiated with the passed media, which
+	 * involves some heavy lifting. See {@link #newInstanceOfSystemPlayer(Media)}
+	 *
+	 * @version 0.0.0.20170425
+	 * @since 0.0
+	 *
+	 * @param media
+	 *            the new media to load
+	 * @throws OodioPlayerException
+	 *             if there was a problem loading the new media
+	 */
+	public void newMedia(Media media) throws OodioPlayerException
+	{
+		newInstanceOfSystemPlayer(media);
+	}
+
+	/**
+	 * Convenience method to house shared logic between {@link #newMedia(Media)} and the constructor
+	 *
+	 * @version 0.0.0.20170425
+	 * @since 0.0
+	 *
+	 * @param media
+	 *            the new media to load
+	 * @throws OodioPlayerException
+	 *             if there was a problem loading the new media
+	 */
+	private void newInstanceOfSystemPlayer(Media media) throws OodioPlayerException
+	{
+		// Stop any existing media that may have been playing
+		if(player_ != null)
+		{
+			player_.stop();
+		}
+
 		player_ = new MediaPlayer(media);
 		buttonList_ = new ButtonList<Button>();
 
@@ -53,14 +100,15 @@ public final class OodioPlayer
 	 * @version 0.0.0.20170423
 	 * @since 0.0
 	 *
-	 * @param pane
-	 *            the pane to append the player too
+	 * @param node
+	 *            the node to append the player too
 	 */
-	public void appendToPane(Pane pane)
+	public void appendToNode(Node node)
 	{
 		for(Button button : buttonList_)
 		{
-			pane.getChildren().add(button);
+			// TODO Remove bad cast
+			((Pane) node).getChildren().add(button);
 		}
 	}
 

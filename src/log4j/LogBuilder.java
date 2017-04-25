@@ -144,6 +144,10 @@ public class LogBuilder
 
 	/**
 	 * Append an entire {@link OodioPlayer} to the log message
+	 * <p>
+	 * Effectively logs the actions the player can complete on its media, and the media contained in the player.
+	 * If this method has been invoked, it is recommended not to invoke {@link #append(Media)} or else an
+	 * {@link SizeLimitExceededException} will occur.
 	 *
 	 * @version 0.0.0.20170423
 	 * @since 0.0
