@@ -25,11 +25,11 @@ epic. Please use the format "OODIO-## Issue summary". Please utilize the
 Wiki, it is updated regularly with design decisions and project directions.
 
 * Source Code
-    [Github](https://github.com/haqpah/oodio/ "Link to the home of the project on Github")
+    [Github](https://github.com/haqpah/oodio/ "Link to the home of the project on Github")  
 * Agile Development
-    [Taiga.io](https://tree.taiga.io/project/haqpah-oodio/ "Link to the home of the agile project on Taiga.io")
+    [Taiga.io](https://tree.taiga.io/project/haqpah-oodio/ "Link to the home of the agile project on Taiga.io")  
 * Wiki
-    [Github Wiki](https://github.com/haqpah/oodio/wiki/ "Link to the wiki of the project on Github")
+    [Github Wiki](https://github.com/haqpah/oodio/wiki/ "Link to the wiki of the project on Github")  
     
 # LICENSE
 Oodio is licensed under GNU General Public License v3. Please see the project
