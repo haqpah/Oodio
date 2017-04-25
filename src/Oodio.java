@@ -39,7 +39,7 @@ public class Oodio extends Application
 	public static Logger systemLogger_;
 
 	/**
-	 * The primary {@link Stage} for Oodio
+	 * The primary {@link Stage} for Oodio.
 	 */
 	private static Stage primaryStage_;
 
@@ -71,8 +71,9 @@ public class Oodio extends Application
 		primaryStage_ = primaryStage;
 
 		TilePane root = new TilePane();
-		Scene primaryScene = new Scene(root, 300, 250);
-		initializePrimaryStage(primaryScene);
+
+		Scene scene = new Scene(root, 300, 250);
+		initializePrimaryStage(scene);
 
 		File file = new File("C:/Users/schel/Music/Instrumentals/Jay IDK - Two Hoes.mp3");
 		Media media = new Media(file.toURI().toString());
@@ -105,14 +106,20 @@ public class Oodio extends Application
 	 * @since 0.0
 	 *
 	 * @param scene
-	 *            the primary scene to assign to the primary stage
+	 *            the scene to assign to the primary stage
 	 */
 	private void initializePrimaryStage(Scene scene)
 	{
-		primaryStage_.setTitle(APPLICATION_NAME_);
-
-		primaryStage_.setScene(scene);
-		primaryStage_.show();
+		if(primaryStage_ != null)
+		{
+			primaryStage_.setTitle(APPLICATION_NAME_);
+			primaryStage_.setScene(scene);
+			primaryStage_.show();
+		}
+		else
+		{
+			throw new NullPointerException("The primary stage's local field is null");
+		}
 	}
 
 	/**
