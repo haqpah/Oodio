@@ -5,7 +5,9 @@ Originally authored by HaqpaH (haqpah@gmail.com)
 ## DESCRIPTION
 An open-source desktop audio player capable of library and playlist management.
 
-### CURRENTLY IN A PRE-ALPHA, RAPID-DEVELOPMENT STAGE
+```diff
+- CURRENTLY IN A PRE-ALPHA
+```
 
 ## PULL REQUESTS
 This is an open-source project. Pull requests will be reviewed as soon as 
