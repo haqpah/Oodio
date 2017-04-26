@@ -5,8 +5,6 @@ import java.io.StringWriter;
 
 import javax.naming.SizeLimitExceededException;
 
-import application.component.ButtonActionType;
-import application.player.OodioPlayer;
 import javafx.scene.media.Media;
 
 /**
@@ -134,46 +132,6 @@ public class LogBuilder
 			else
 			{
 				throw new SizeLimitExceededException("The builder cannot contain more than one media object");
-			}
-		}
-		catch (SizeLimitExceededException e)
-		{
-			logSizeLimitExceededException(e);
-		}
-	}
-
-	/**
-	 * Append an entire {@link OodioPlayer} to the log message
-	 * <p>
-	 * Effectively logs the actions the player can complete on its media, and the media contained in the player.
-	 * If this method has been invoked, it is recommended not to invoke {@link #append(Media)} or else an
-	 * {@link SizeLimitExceededException} will occur.
-	 *
-	 * @version 0.0.0.20170423
-	 * @since 0.0
-	 *
-	 * @param player
-	 *            the player to be appended
-	 */
-	public void append(OodioPlayer player)
-	{
-		append(player.getMedia());
-
-		try
-		{
-			if(playerBuilder_.length() == 0)
-			{
-				playerBuilder_.append("  Actions: ");
-				player.getButtonList().forEach(button -> {
-					playerBuilder_.append(button.getButtonActionType() + ", ");
-				});
-
-				// Remove extra ", "
-				playerBuilder_.replace(playerBuilder_.length() - 2, playerBuilder_.length(), "");
-			}
-			else
-			{
-				throw new SizeLimitExceededException("The builder cannot contain more than one player object");
 			}
 		}
 		catch (SizeLimitExceededException e)
