@@ -1,4 +1,4 @@
-package services;
+package github.haqpah.oodio.services;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -33,6 +33,6 @@ public class SystemPathService
 	 */
 	public static Path getFxmlDirectory()
 	{
-		return Paths.get("src/application/fxml");
+		return Paths.get("src/github/haqpah/oodio/application/fxml");
 	}
 }

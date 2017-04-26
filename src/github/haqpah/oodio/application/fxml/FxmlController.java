@@ -1,4 +1,4 @@
-package application.fxml;
+package github.haqpah.oodio.application.fxml;
 
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Node;

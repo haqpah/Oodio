@@ -1,16 +1,16 @@
-package application.controller;
+package github.haqpah.oodio.application.controller;
 
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.nio.file.Path;
 
-import application.fxml.FxmlController;
+import github.haqpah.oodio.application.fxml.FxmlController;
+import github.haqpah.oodio.services.SystemPathService;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
 import javafx.scene.media.MediaPlayer;
-import services.SystemPathService;
 
 /**
  * TODO
@@ -20,7 +20,10 @@ import services.SystemPathService;
  */
 public class SystemPlayerController extends HBox implements FxmlController
 {
-	private static final String FXML_FILEPATH_ = "";
+	/**
+	 * The FXML file name for this controller
+	 */
+	private static final String FXML_FILENAME_ = "SystemPlayer.fxml";
 
 	/**
 	 * The loader has access to the underlying FXML document the defines
@@ -53,7 +56,7 @@ public class SystemPlayerController extends HBox implements FxmlController
 			fxmlLoader_ = new FXMLLoader();
 			fxmlLoader_.setController(this);
 
-			Path fxmlPath = SystemPathService.getFxmlDirectory().resolve("SystemPlayer.fxml");
+			Path fxmlPath = SystemPathService.getFxmlDirectory().resolve(FXML_FILENAME_);
 			FileInputStream stream = new FileInputStream(fxmlPath.toString());
 			rootPane_ = (HBox) fxmlLoader_.load(stream);
 		}

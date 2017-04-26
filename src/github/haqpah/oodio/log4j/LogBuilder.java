@@ -1,10 +1,11 @@
-package log4j;
+package github.haqpah.oodio.log4j;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
 
 import javax.naming.SizeLimitExceededException;
 
+import github.haqpah.oodio.Oodio;
 import javafx.scene.media.Media;
 
 /**

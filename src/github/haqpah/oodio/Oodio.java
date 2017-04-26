@@ -1,9 +1,11 @@
+package github.haqpah.oodio;
+
 import java.io.File;
 
 import org.apache.log4j.Logger;
 import org.apache.log4j.PropertyConfigurator;
 
-import application.controller.SystemPlayerController;
+import github.haqpah.oodio.application.controller.SystemPlayerController;
 import javafx.application.Application;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
@@ -43,7 +45,7 @@ public class Oodio extends Application
 	/**
 	 * The file path for the log4j properties file, responsible for LOG4J configuration
 	 */
-	private static final String LOG4J_PROPERTIES_FILEPATH_ = "src/log4j/log4j.properties";
+	private static final String LOG4J_PROPERTIES_FILEPATH_ = "src/github/haqpah/oodio/log4j/log4j.properties";
 
 	/**
 	 * The {@link OodioLogger} object for the application

@@ -1,8 +1,8 @@
-package application;
+package github.haqpah.oodio.application;
 
 import java.io.File;
 
-import application.controller.SystemPlayerController;
+import github.haqpah.oodio.application.controller.SystemPlayerController;
 import javafx.scene.media.Media;
 import javafx.scene.media.MediaPlayer;
 
