@@ -1,8 +1,8 @@
 package github.haqpah.oodio.application.controller;
 
 import javafx.fxml.FXMLLoader;
-import javafx.scene.Node;
 import javafx.scene.layout.Pane;
+import javafx.stage.Stage;
 
 /**
  * Interface for controllers
@@ -34,12 +34,22 @@ public interface FxmlController
 	public String getFxmlFilename();
 
 	/**
-	 * Gets the root {@link Node} that this controller's UI elements are contained in
+	 * Gets the primary {@link Stage}. This is? a direct access to the {@link #getRootPane()} parent
 	 *
 	 * @version 0.0.0.20170426
 	 * @since 0.0
 	 *
-	 * @return the root node
+	 * @return the primary stage
+	 */
+	public Stage getPrimaryStage();
+
+	/**
+	 * Gets the root {@link Pane} that this controller's UI elements are contained in
+	 *
+	 * @version 0.0.0.20170426
+	 * @since 0.0
+	 *
+	 * @return the root pane
 	 */
 	public Pane getRootPane();
 }

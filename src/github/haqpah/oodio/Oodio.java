@@ -41,12 +41,12 @@ public class Oodio extends Application
 	/**
 	 * The {@link OodioLogger} object for the application
 	 */
-	private static Logger systemLogger_;
+	public static Logger systemLogger_;
 
 	/**
 	 * The primary {@link Stage} for Oodio.
 	 */
-	private static Stage primaryStage_;
+	public static Stage primaryStage_;
 
 	/**
 	 * The {@link FxmlController} containing application actions for the user
@@ -89,12 +89,12 @@ public class Oodio extends Application
 
 		BorderPane root = new BorderPane();
 
-		systemMenuController_ = new SystemMenuController();
+		systemMenuController_ = new SystemMenuController(primaryStage_);
 		HBox systemMenuRoot = (HBox) systemMenuController_.getRootPane();
 
 		systemLogger_.info("Setting up new controller");
 
-		systemPlayerController_ = new SystemPlayerController();
+		systemPlayerController_ = new SystemPlayerController(primaryStage_);
 		HBox systemPlayerRoot = (HBox) systemPlayerController_.getRootPane();
 
 		root.setTop(systemMenuRoot);

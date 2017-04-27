@@ -1,8 +1,12 @@
 package github.haqpah.oodio.application.controller;
 
+import java.io.File;
+
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
+import javafx.scene.media.Media;
 import javafx.scene.media.MediaPlayer;
+import javafx.stage.Stage;
 
 /**
  * The controller for the system player
@@ -28,9 +32,15 @@ public final class SystemPlayerController extends AbstractController
 	 * @version 0.0.0.20170425
 	 * @since 0.0
 	 */
-	public SystemPlayerController()
+	public SystemPlayerController(Stage primaryStage)
 	{
-		super(FXML_FILENAME_);
+		super(primaryStage, FXML_FILENAME_);
+
+		// TODO Default song to load
+		File file = new File("C:/Users/schel/Music/Instrumentals/Jay IDK - Two Hoes.mp3");
+		Media media = new Media(file.toURI().toString());
+
+		systemPlayer_ = new MediaPlayer(media);
 	}
 
 	/**

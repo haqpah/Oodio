@@ -8,6 +8,7 @@ import github.haqpah.oodio.services.SystemPathService;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
+import javafx.stage.Stage;
 
 abstract class AbstractController implements FxmlController
 {
@@ -16,6 +17,12 @@ abstract class AbstractController implements FxmlController
 	 * the {@link javafx.scene.Node}s being controlled by this controller
 	 */
 	private FXMLLoader fxmlLoader_;
+
+	/**
+	 * The stage this controllers parent is attached to
+	 */
+	// TODO do better
+	private static Stage primaryStage_;
 
 	/**
 	 * The root {@link Pane} that this controller's UI elements are contained in, defined by the FXML
@@ -28,8 +35,10 @@ abstract class AbstractController implements FxmlController
 	 * @version 0.0.0.20170426
 	 * @since 0.0
 	 */
-	public AbstractController(String fxmlFilename)
+	public AbstractController(Stage primaryStage, String fxmlFilename)
 	{
+		primaryStage_ = primaryStage;
+
 		try
 		{
 			fxmlLoader_ = new FXMLLoader();
@@ -54,6 +63,16 @@ abstract class AbstractController implements FxmlController
 	public FXMLLoader getFxmlLoader()
 	{
 		return fxmlLoader_;
+	}
+
+	/**
+	 * @version 0.0.0.20170426
+	 * @since 0.0
+	 */
+	@Override
+	public Stage getPrimaryStage()
+	{
+		return primaryStage_;
 	}
 
 	/**

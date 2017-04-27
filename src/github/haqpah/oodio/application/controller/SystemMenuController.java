@@ -1,12 +1,16 @@
 package github.haqpah.oodio.application.controller;
 
 import java.awt.Desktop;
+import java.io.File;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
+import javafx.scene.media.Media;
+import javafx.stage.FileChooser;
+import javafx.stage.Stage;
 
 public final class SystemMenuController extends AbstractController
 {
@@ -21,9 +25,9 @@ public final class SystemMenuController extends AbstractController
 	 * @version 0.0.0.20170426
 	 * @since 0.0
 	 */
-	public SystemMenuController()
+	public SystemMenuController(Stage primaryStage)
 	{
-		super(FXML_FILENAME_);
+		super(primaryStage, FXML_FILENAME_);
 	}
 
 	@FXML
@@ -35,7 +39,13 @@ public final class SystemMenuController extends AbstractController
 	@FXML
 	public void addTrack(ActionEvent event)
 	{
-
+		FileChooser fileChooser = new FileChooser();
+		File file = fileChooser.showOpenDialog(getPrimaryStage());
+		if(file != null)
+		{
+			Media media = new Media(file.toURI().toString());
+			// TODO load into system player
+		}
 	}
 
 	@FXML

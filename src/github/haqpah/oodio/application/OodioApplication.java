@@ -61,12 +61,12 @@ public class OodioApplication extends Application
 
 		BorderPane root = new BorderPane();
 
-		systemMenuController_ = new SystemMenuController();
+		systemMenuController_ = new SystemMenuController(primaryStage_);
 		HBox systemMenuRoot = (HBox) systemMenuController_.getRootPane();
 
 		systemLogger_.info("Setting up new controller");
 
-		systemPlayerController_ = new SystemPlayerController();
+		systemPlayerController_ = new SystemPlayerController(primaryStage_);
 		HBox systemPlayerRoot = (HBox) systemPlayerController_.getRootPane();
 
 		root.setTop(systemMenuRoot);
