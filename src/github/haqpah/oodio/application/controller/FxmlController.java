@@ -1,4 +1,4 @@
-package github.haqpah.oodio.application.fxml;
+package github.haqpah.oodio.application.controller;
 
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Node;
@@ -22,6 +22,16 @@ public interface FxmlController
 	 * @return the FXMLLoader
 	 */
 	public FXMLLoader getFxmlLoader();
+
+	/**
+	 * Gets the filename of the FXML that is loaded into the controller
+	 *
+	 * @version 0.0.0.20170426
+	 * @since 0.0
+	 *
+	 * @return
+	 */
+	public String getFxmlFilename();
 
 	/**
 	 * Gets the root {@link Node} that this controller's UI elements are contained in

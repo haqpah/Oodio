@@ -1,7 +1,6 @@
-package github.haqpah.oodio;
+package github.haqpah.oodio.application;
 
 import org.apache.log4j.Logger;
-import org.apache.log4j.PropertyConfigurator;
 
 import github.haqpah.oodio.application.controller.FxmlController;
 import github.haqpah.oodio.application.controller.SystemMenuController;
@@ -13,20 +12,12 @@ import javafx.scene.layout.HBox;
 import javafx.stage.Stage;
 
 /**
- * The Oodio media player
- * <p>
- * An open-source desktop audio player capable of library and playlist management.<br>
- * This application is licensed under GNU General Public License v3.
+ * Application layer
  *
- * @author HaqpaH (haqpah@gmail.com)
- *
- * @version 0.0.0.20170422
+ * @version 0.0.0.20170426
  * @since 0.0
- *
- * @see https://www.gnu.org/licenses/gpl-3.0.en.html
- * @see https://github.com/haqpah/oodio
  */
-public class Oodio extends Application
+public class OodioApplication extends Application
 {
 	/**
 	 * Official name for the application
@@ -34,12 +25,7 @@ public class Oodio extends Application
 	private static final String APPLICATION_NAME_ = "Oodio";
 
 	/**
-	 * The file path for the log4j properties file, responsible for LOG4J configuration
-	 */
-	private static final String LOG4J_PROPERTIES_FILEPATH_ = "src/github/haqpah/oodio/log/log4j/log4j.properties";
-
-	/**
-	 * The {@link OodioLogger} object for the application
+	 * Responsible for logging system runtime information
 	 */
 	private static Logger systemLogger_;
 
@@ -58,23 +44,9 @@ public class Oodio extends Application
 	 */
 	private static FxmlController systemPlayerController_;
 
-	/**
-	 * The main method for the Oodio media player
-	 *
-	 * @version 0.0.1.20170423
-	 * @since 0.0
-	 *
-	 * @param args
-	 *            Command line arguments
-	 */
-	public static void main(String[] args)
+	public OodioApplication(Logger systemLogger)
 	{
-		PropertyConfigurator.configure(LOG4J_PROPERTIES_FILEPATH_);
-
-		systemLogger_ = Logger.getLogger("rootLogger");
-		systemLogger_.info(APPLICATION_NAME_ + " has begun execution");
-
-		launch(args);
+		systemLogger_ = systemLogger;
 	}
 
 	/**
@@ -106,6 +78,15 @@ public class Oodio extends Application
 		primaryStage_.show();
 	}
 
+	@Override
+	public void stop() throws Exception
+	{
+		// TODO
+		systemLogger_.shutdown();
+
+		super.stop();
+	}
+
 	/**
 	 * Accessor for the {@link #primaryStage_}
 	 *
@@ -117,18 +98,5 @@ public class Oodio extends Application
 	public Stage getPrimaryStage()
 	{
 		return primaryStage_;
-	}
-
-	/**
-	 * Gets the system logger
-	 *
-	 * @version 0.0.0.20170423
-	 * @since 0.0
-	 *
-	 * @return the system logger
-	 */
-	public static Logger getSystemLogger()
-	{
-		return systemLogger_;
 	}
 }

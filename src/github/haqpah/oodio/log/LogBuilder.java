@@ -1,4 +1,4 @@
-package github.haqpah.oodio.log4j;
+package github.haqpah.oodio.log;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
