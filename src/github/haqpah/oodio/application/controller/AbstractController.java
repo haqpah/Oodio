@@ -4,12 +4,20 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.nio.file.Path;
 
+import org.apache.log4j.Logger;
+
 import github.haqpah.oodio.services.SystemPathService;
 import javafx.fxml.FXMLLoader;
-import javafx.scene.layout.HBox;
+import javafx.scene.Node;
 import javafx.scene.layout.Pane;
 import javafx.stage.Stage;
 
+/**
+ * Abstract implementation of a controller for FXML files
+ *
+ * @version 0.0.0.20170426
+ * @since 0.0
+ */
 abstract class AbstractController implements FxmlController
 {
 	/**
@@ -19,25 +27,30 @@ abstract class AbstractController implements FxmlController
 	private FXMLLoader fxmlLoader_;
 
 	/**
+	 * Responsbile for logging runtime information for a controller
+	 */
+	private Logger systemLogger_;
+
+	/**
 	 * The stage this controllers parent is attached to
 	 */
 	// TODO do better
-	private static Stage primaryStage_;
-
+	private Stage primaryStage_;
 	/**
 	 * The root {@link Pane} that this controller's UI elements are contained in, defined by the FXML
 	 */
-	private HBox rootPane_;
+	private Node rootPane_;
 
 	/**
-	 *
+	 * Abstract implementation of a controller for FXML files
 	 *
 	 * @version 0.0.0.20170426
 	 * @since 0.0
 	 */
-	public AbstractController(Stage primaryStage, String fxmlFilename)
+	public AbstractController(final Stage primaryStage, final Logger systemLogger, String fxmlFilename)
 	{
 		primaryStage_ = primaryStage;
+		systemLogger_ = systemLogger;
 
 		try
 		{
@@ -46,13 +59,53 @@ abstract class AbstractController implements FxmlController
 
 			Path fxmlPath = SystemPathService.getFxmlDirectory().resolve(fxmlFilename);
 			FileInputStream stream = new FileInputStream(fxmlPath.toString());
-			rootPane_ = (HBox) getFxmlLoader().load(stream);
+			rootPane_ = getFxmlLoader().load(stream);
 		}
 		catch (IOException e)
 		{
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			addLog("Exception occurred while setting up controller\n  File: " + fxmlFilename, e);
 		}
+	}
+
+	/**
+	 * Logs a message to the system log file
+	 *
+	 * @version 0.0.0.20170427
+	 * @since 0.0
+	 *
+	 * @param logMessage
+	 *            the message to log
+	 */
+	protected void addLog(String logMessage)
+	{
+		systemLogger_.info(logMessage);
+	}
+
+	/**
+	 * Logs a message with an exception to the system log file
+	 *
+	 * @version 0.0.0.20170427
+	 * @since 0.0
+	 *
+	 * @param logMessage
+	 *            the message to log
+	 * @param throwable
+	 *            the exception that occurred
+	 */
+	protected void addLog(String logMessage, Throwable throwable)
+	{
+		systemLogger_.error(logMessage, throwable);
+	}
+
+	/**
+	 * Gets the system logger passed into this controller
+	 *
+	 * @version 0.0.0.20170427
+	 * @since 0.0
+	 */
+	protected Logger getSystemLogger()
+	{
+		return systemLogger_;
 	}
 
 	/**
@@ -80,7 +133,7 @@ abstract class AbstractController implements FxmlController
 	 * @since 0.0
 	 */
 	@Override
-	public Pane getRootPane()
+	public Node getRootNode()
 	{
 		return rootPane_;
 	}

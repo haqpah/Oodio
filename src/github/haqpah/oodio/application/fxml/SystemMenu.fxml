@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import java.lang.*?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
@@ -10,13 +9,13 @@
 	<children>
 		<MenuBar>
 			<menus>
-				<Menu fx:id="fileMenu" text="_File" mnemonicParsing="true" >
+				<Menu fx:id="fileMenu" mnemonicParsing="true" text="_File">
 					<items>
 						<MenuItem fx:id="aboutButton" mnemonicParsing="true" onAction="#about" text="_About" />
 						<MenuItem fx:id="newPlaylistButton" mnemonicParsing="true" onAction="#newPlaylist" text="_New PlayList" />
-                  		<Menu fx:id="libraryMenu" mnemonicParsing="true" text="_Library" >
+                  		<Menu fx:id="libraryMenu" mnemonicParsing="true" text="_Library">
                   			<items>
-                  				<MenuItem fx:id="addTrackButton" mnemonicParsing="true" onAction="#addTrack" text="_Add track..." />	
+                  				<MenuItem fx:id="addTrackButton" mnemonicParsing="true" onAction="#addTrackToLibrary" text="_Add track..." />	
                   			</items>
                   		</Menu>
                 		<SeparatorMenuItem />
