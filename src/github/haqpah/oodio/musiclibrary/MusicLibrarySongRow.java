@@ -1,8 +1,5 @@
 package github.haqpah.oodio.musiclibrary;
 
-import java.util.Map;
-import java.util.Map.Entry;
-
 import javafx.beans.property.SimpleStringProperty;
 
 /**
@@ -11,73 +8,49 @@ import javafx.beans.property.SimpleStringProperty;
  * @version 0.0.0.20170429
  * @since 0.0
  */
-public class LibrarySongRow
+public class MusicLibrarySongRow
 {
 	/**
 	 * The title column value
 	 */
-	private SimpleStringProperty title_ = new SimpleStringProperty("");
+	private SimpleStringProperty title_;
 
 	/**
 	 * The artist column value
 	 */
-	private SimpleStringProperty artist_ = new SimpleStringProperty("");
+	private SimpleStringProperty artist_;
 
 	/**
 	 * The album column value
 	 */
-	private SimpleStringProperty album_ = new SimpleStringProperty("");
+	private SimpleStringProperty album_;
 
 	/**
 	 * The genre colum value
 	 */
-	private SimpleStringProperty genre_ = new SimpleStringProperty("");
+	private SimpleStringProperty genre_;
 
 	/**
 	 * The year column value
 	 */
-	private SimpleStringProperty year_ = new SimpleStringProperty("");
+	private SimpleStringProperty year_;
 
 	/**
-	 * A row to be submitted to the music library table view, populated with the passed metadata
+	 * A row to be submitted to the music library table view, populated with the passed {@link MusicLibrarySong}
 	 *
 	 * @version 0.0.0.20170429
 	 * @since 0.0
 	 *
-	 * @param songMetadata
-	 *            the metadata to populate the row with
+	 * @param song
+	 *            the song to populate this row with
 	 */
-	public LibrarySongRow(Map<String, Object> songMetadata)
+	public MusicLibrarySongRow(MusicLibrarySong song)
 	{
-		for(Entry<String, Object> entry : songMetadata.entrySet())
-		{
-			String key = entry.getKey();
-			boolean matchFound = LibrarySongMetadataKey.findMatch(key);
-			if(matchFound)
-			{
-				String valueToSave = String.valueOf(songMetadata.get(key));
-				switch (key)
-				{
-					case "title":
-						title_.set(valueToSave);
-						break;
-					case "artist":
-						artist_.set(valueToSave);
-						break;
-					case "album":
-						album_.set(valueToSave);
-						break;
-					case "genre":
-						genre_.set(valueToSave);
-						break;
-					case "year":
-						year_.set(valueToSave);
-						break;
-					default:
-						; // do nothing
-				}
-			}
-		}
+		title_ = new SimpleStringProperty(song.getTitle());
+		artist_ = new SimpleStringProperty(song.getArtist());
+		album_ = new SimpleStringProperty(song.getAlbum());
+		genre_ = new SimpleStringProperty(song.getGenre());
+		year_ = new SimpleStringProperty(song.getYear());
 	}
 
 	/**
@@ -146,16 +119,27 @@ public class LibrarySongRow
 	}
 
 	/**
-	 * Modifier for the year
-	 *
-	 * @version 0.0.0.20170429
+	 * @version 0.0.0.20170430
 	 * @since 0.0
-	 *
-	 * @param year
-	 *            the year to set
 	 */
-	public void setYear(SimpleStringProperty year)
+	@Override
+	public String toString()
 	{
-		this.year_ = year;
+		StringBuilder sb = new StringBuilder();
+
+		// No carriage returns
+		sb.append("row[ ")
+				.append(title_.getValue())
+				.append(", ")
+				.append(artist_.getValue())
+				.append(", ")
+				.append(album_.getValue())
+				.append(", ")
+				.append(genre_.getValue())
+				.append(", ")
+				.append(year_.getValue())
+				.append("]");
+
+		return sb.toString();
 	}
 }

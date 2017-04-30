@@ -2,6 +2,7 @@ package github.haqpah.oodio.musiclibrary;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import github.haqpah.oodio.services.ArtistMetadataLoaderService;
 
@@ -53,10 +54,45 @@ public class ArtistMetadata
 	 * @version 0.0.0.20170428
 	 * @since 0.0
 	 *
-	 * @return
+	 * @return the album metadata
 	 */
 	public List<AlbumMetadata> getAlbumMetadata()
 	{
 		return albumMetadata_;
+	}
+
+	/**
+	 * @version 0.0.0.20170430
+	 * @since 0.0
+	 */
+	@Override
+	public String toString()
+	{
+		StringBuilder sb = new StringBuilder();
+
+		sb.append("ArtistMetadata")
+				.append(System.lineSeparator())
+				.append("{");
+
+		for(AlbumMetadata album : albumMetadata_)
+		{
+			sb.append(System.lineSeparator())
+					.append("  Album: ")
+					.append(album.getAlbumName());
+
+			List<Map<String, Object>> songs = album.getSongMetadata();
+			for(Map<String, Object> metadata : songs)
+			{
+				MusicLibrarySong song = new MusicLibrarySong(metadata);
+
+				sb.append(System.lineSeparator())
+						.append("     Song: " + song.toString());
+			}
+		}
+
+		sb.append(System.lineSeparator())
+				.append("}");
+
+		return sb.toString();
 	}
 }

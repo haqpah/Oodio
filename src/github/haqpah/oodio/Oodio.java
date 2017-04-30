@@ -8,14 +8,12 @@ import org.apache.log4j.Logger;
 import org.apache.log4j.PropertyConfigurator;
 
 import github.haqpah.oodio.application.controller.FxmlController;
-import github.haqpah.oodio.application.controller.MusicLibraryController;
-import github.haqpah.oodio.application.controller.SystemMenuController;
-import github.haqpah.oodio.application.controller.SystemPlayerController;
+import github.haqpah.oodio.application.controller.SystemController;
 import github.haqpah.oodio.musiclibrary.MusicLibraryMetadata;
 import github.haqpah.oodio.services.SystemPathService;
 import javafx.application.Application;
 import javafx.scene.Scene;
-import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.AnchorPane;
 import javafx.stage.Stage;
 
 /**
@@ -50,7 +48,7 @@ public class Oodio extends Application
 	public static Stage primaryStage_;
 
 	/**
-	 * The music library loaded in memory. <strong>This is not a collection of playable media files!</strong>
+	 * The music library loaded in-memory. <strong>This is not a collection of playable media files!</strong>
 	 * <p>
 	 * This is a collection of artist metadata, which contains album metadata for each album in
 	 * the artist's directory. Each album metadata contains a list of metadata objects for each song.
@@ -72,13 +70,13 @@ public class Oodio extends Application
 		systemLogger_ = Logger.getLogger("rootLogger");
 		systemLogger_.info(APPLICATION_NAME_ + " has begun execution");
 
-		loadMusicLibrary();
-
 		try
 		{
-			Thread.sleep(5000);
+			loadMusicLibrary();
+
+			// Thread.sleep(5000);
 		}
-		catch (InterruptedException e)
+		catch (Exception e)
 		{
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -93,15 +91,16 @@ public class Oodio extends Application
 	 * entails searching for an existing music folder and traversing all directories, or creating the
 	 * folder if one is not found.
 	 * <p>
-	 * The music library loaded in memory. <strong>This is not a collection of playable media files!</strong>
+	 * The music library loaded in-memory. <strong>This is not a collection of playable media files!</strong>
 	 * <p>
 	 * This is a collection of artist metadata, which contains album metadata for each album in
 	 * the artist's directory. Each album metadata contains a list of metadata objects for each song.
 	 *
 	 * @version 0.0.0.20170427
+	 * @throws Exception
 	 * @since 0.0
 	 */
-	private static void loadMusicLibrary()
+	private static void loadMusicLibrary() throws Exception
 	{
 		try
 		{
@@ -137,18 +136,20 @@ public class Oodio extends Application
 		primaryStage_ = primaryStage;
 		primaryStage_.setTitle(APPLICATION_NAME_);
 
-		BorderPane root = new BorderPane();
+		// BorderPane root = new BorderPane();
 
-		FxmlController systemMenuController = new SystemMenuController(primaryStage_, systemLogger_, musicLibraryMetadata_);
-		root.setTop(systemMenuController.getRootNode());
+		// FxmlController systemMenuController = new SystemMenuController(primaryStage_, systemLogger_, musicLibraryMetadata_);
+		// root.setTop(systemMenuController.getRootNode());
+		//
+		// FxmlController musicLibraryController = new MusicLibraryController(primaryStage_, systemLogger_, musicLibraryMetadata_);
+		// root.setCenter(musicLibraryController.getRootNode());
+		//
+		// FxmlController systemPlayerController = new SystemPlayerController(primaryStage_, systemLogger_);
+		// root.setBottom(systemPlayerController.getRootNode());
 
-		FxmlController musicLibraryController = new MusicLibraryController(primaryStage_, systemLogger_, musicLibraryMetadata_);
-		root.setCenter(musicLibraryController.getRootNode());
+		FxmlController systemController = new SystemController(primaryStage_, systemLogger_, musicLibraryMetadata_);
 
-		FxmlController systemPlayerController = new SystemPlayerController(primaryStage_, systemLogger_);
-		root.setBottom(systemPlayerController.getRootNode());
-
-		primaryStage_.setScene(new Scene(root));
+		primaryStage_.setScene(new Scene((AnchorPane) systemController.getRootNode()));
 		primaryStage_.setMaximized(true);
 		primaryStage_.show();
 	}

@@ -3,7 +3,7 @@ package github.haqpah.oodio.musiclibrary;
 import javafx.scene.media.Media;
 
 /**
- * The metadata that should be shown in a {@link LibrarySongRow}
+ * The metadata that should be shown in a {@link MusicLibrarySongRow}
  *
  * @version 0.0.0.20170429
  * @since 0.0
@@ -23,7 +23,7 @@ public enum LibrarySongMetadataKey
 	private String key_;
 
 	/**
-	 * Holds the {@link JavaFxMediaMetadataKey}s that should be shown for a {@link LibrarySongRow}
+	 * Holds the {@link JavaFxMediaMetadataKey}s that should be shown for a {@link MusicLibrarySongRow}
 	 *
 	 * @version 0.0.0.20170429
 	 * @since 0.0

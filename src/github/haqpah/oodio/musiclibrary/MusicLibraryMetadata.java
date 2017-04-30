@@ -19,7 +19,7 @@ import github.haqpah.oodio.services.ArtistMetadataLoaderService;
 public class MusicLibraryMetadata
 {
 	private Path libraryDirectory_;
-	private ArrayList<ArtistMetadata> libraryMetadata_;
+	private List<ArtistMetadata> libraryMetadata_;
 
 	/**
 	 *
@@ -30,15 +30,72 @@ public class MusicLibraryMetadata
 	 *
 	 * @param libraryDirectory
 	 * @param systemLogger
+	 * @throws Exception
 	 */
-	public MusicLibraryMetadata(Path libraryDirectory, final Logger systemLogger)
+	public MusicLibraryMetadata(Path libraryDirectory, final Logger systemLogger) throws Exception
 	{
 		libraryDirectory_ = libraryDirectory;
+		libraryMetadata_ = new ArrayList<ArtistMetadata>();
 
+		// run synchronous directory parse
+		runSynchDirectoryParse(systemLogger);
+
+		// XXX: asynch is too fast for small library?
+		// run asynchronous directory parse
+		// runAsynchDirectoryParse(systemLogger);
+
+	}
+
+	/**
+	 * Method to synchronously parse through a music library directory for artist metadata.
+	 * <p>
+	 * With a small library, it appears to be more reliable that {@link #runAsynchDirectoryParse(Logger)}.
+	 *
+	 * @version 0.0.0.20170430
+	 * @since 0.0
+	 *
+	 * @param systemLogger
+	 *            logs this synch process with debug logs.
+	 */
+	private void runSynchDirectoryParse(final Logger systemLogger) throws Exception
+	{
+		DirectoryStream<Path> libraryStream = Files.newDirectoryStream(libraryDirectory_);
+		for(Path artistDirectory : libraryStream)
+		{
+			ArtistMetadataLoaderService artistMetadataLoader = new ArtistMetadataLoaderService(artistDirectory, systemLogger);
+			ArtistMetadata artistMetadata = artistMetadataLoader.traverseArtistDirectory();
+
+			StringBuilder logMessage = new StringBuilder();
+			logMessage.append("Synchronous result is being added to in-memory music library")
+					.append(System.lineSeparator())
+					.append(artistMetadata.toString());
+
+			systemLogger.debug(logMessage.toString());
+
+			libraryMetadata_.add(artistMetadata);
+		}
+	}
+
+	/**
+	 * Method to asynchronously parse through a music library directory for artist metadata.
+	 * <p>
+	 * This method is not used but the logic should be saved. With a small library, it appears
+	 * to execute to fast and miss data.
+	 * <p>
+	 * Make sure debug logging is on in log4j.properties
+	 *
+	 * @version 0.0.0.20170430
+	 * @since 0.0
+	 *
+	 * @param systemLogger
+	 *            logs this asynch process with debug logs.
+	 */
+	private void runAsynchDirectoryParse(final Logger systemLogger)
+	{
 		List<Future<ArtistMetadata>> artistFutures = new ArrayList<Future<ArtistMetadata>>();
 		try
 		{
-			digDownMusicLibraryDirectory(artistFutures);
+			digDownMusicLibraryDirectory(artistFutures, systemLogger);
 		}
 		catch (IOException e)
 		{
@@ -59,6 +116,7 @@ public class MusicLibraryMetadata
 		}
 
 		systemLogger.info(artistFutures.size() + " callable futures were successfully executed");
+
 	}
 
 	/**
@@ -73,22 +131,31 @@ public class MusicLibraryMetadata
 	 * @throws IOException
 	 *             if there is a problem creating the library directory stream
 	 */
-	private void digDownMusicLibraryDirectory(List<Future<ArtistMetadata>> artistFutures) throws IOException
+	private void digDownMusicLibraryDirectory(List<Future<ArtistMetadata>> artistFutures, final Logger systemLogger) throws IOException
 	{
 		ExecutorService executor = Executors.newCachedThreadPool();
 
 		DirectoryStream<Path> libraryStream = Files.newDirectoryStream(libraryDirectory_);
 
+		// TODO race condition. maybe futures are too fast for this
 		for(Path artistDirectory : libraryStream)
 		{
 			// Submit a new callable to the executor for faster directory traversal
-			Future<ArtistMetadata> artistFuture = executor.submit(new ArtistMetadataLoaderService(artistDirectory));
+			Callable<ArtistMetadata> callable = new Callable<ArtistMetadata>()
+			{
+				@Override
+				public ArtistMetadata call() throws Exception
+				{
+					return new ArtistMetadataLoaderService(artistDirectory, systemLogger).traverseArtistDirectory();
+				}
+			};
+			Future<ArtistMetadata> artistFuture = executor.submit(callable);
 			artistFutures.add(artistFuture);
 		}
 	}
 
 	/**
-	 * Convenience method to populate the in memory music library metadata object
+	 * Convenience method to populate the in-memory music library metadata object
 	 *
 	 * @version 0.0.0.20170429
 	 * @since 0.0
@@ -102,11 +169,18 @@ public class MusicLibraryMetadata
 	private void populateMusicLibraryMetadata(List<Future<ArtistMetadata>> artistFutures, final Logger systemLogger)
 			throws InterruptedException, ExecutionException
 	{
-		libraryMetadata_ = new ArrayList<ArtistMetadata>();
-
 		for(Future<ArtistMetadata> future : artistFutures)
 		{
-			libraryMetadata_.add(future.get());
+			ArtistMetadata artistMetadata = future.get();
+
+			StringBuilder logMessage = new StringBuilder();
+			logMessage.append("Future result is being added to in-memory music library")
+					.append(System.lineSeparator())
+					.append(artistMetadata.toString());
+
+			systemLogger.debug(logMessage.toString());
+
+			libraryMetadata_.add(artistMetadata);
 		}
 	}
 
@@ -118,7 +192,7 @@ public class MusicLibraryMetadata
 	 *
 	 * @return the metadata
 	 */
-	public ArrayList<ArtistMetadata> getLibraryMetadata()
+	public List<ArtistMetadata> getLibraryMetadata()
 	{
 		return libraryMetadata_;
 	}

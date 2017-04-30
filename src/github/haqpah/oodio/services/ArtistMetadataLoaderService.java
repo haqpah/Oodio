@@ -4,18 +4,25 @@ import java.io.IOException;
 import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.concurrent.Callable;
+import java.util.Map;
+
+import org.apache.log4j.Logger;
 
 import github.haqpah.oodio.musiclibrary.AlbumMetadata;
 import github.haqpah.oodio.musiclibrary.ArtistMetadata;
 import javafx.scene.media.Media;
 
-public class ArtistMetadataLoaderService implements Callable<ArtistMetadata>
+public class ArtistMetadataLoaderService
 {
 	/**
 	 * The artist directory to load
 	 */
 	private Path artistDirectory_;
+
+	/**
+	 * Logs information to the system
+	 */
+	private Logger systemLogger_;
 
 	/**
 	 * A service to traverse an artist directory to get metadata on every media file buried in the directory.
@@ -25,19 +32,12 @@ public class ArtistMetadataLoaderService implements Callable<ArtistMetadata>
 	 * @version 0.0.0.20170428
 	 * @since 0.0
 	 */
-	public ArtistMetadataLoaderService(Path artistDirectory)
+	public ArtistMetadataLoaderService(Path artistDirectory, final Logger systemLogger)
 	{
 		artistDirectory_ = artistDirectory;
-	}
+		systemLogger_ = systemLogger;
 
-	/**
-	 * @version 0.0.0.20170428
-	 * @since 0.0
-	 */
-	@Override
-	public ArtistMetadata call() throws Exception
-	{
-		return traverseArtistDirectory();
+		systemLogger.debug("New loader service for " + artistDirectory.getFileName());
 	}
 
 	/**
@@ -48,7 +48,7 @@ public class ArtistMetadataLoaderService implements Callable<ArtistMetadata>
 	 *
 	 * @return a list of metadata objects in a map
 	 */
-	private ArtistMetadata traverseArtistDirectory() throws IOException
+	public ArtistMetadata traverseArtistDirectory() throws IOException
 	{
 		DirectoryStream<Path> artistDirectoryStream = Files.newDirectoryStream(artistDirectory_);
 
@@ -60,6 +60,7 @@ public class ArtistMetadataLoaderService implements Callable<ArtistMetadata>
 		{
 			String albumName = albumDirectory.getFileName().toString();
 			AlbumMetadata albumMetadata = new AlbumMetadata(albumName);
+			systemLogger_.debug("Traversing " + albumName + " by " + artistName);
 
 			// Traverse the album for each song
 			DirectoryStream<Path> albumDirectoryStream = Files.newDirectoryStream(albumDirectory);
@@ -67,7 +68,9 @@ public class ArtistMetadataLoaderService implements Callable<ArtistMetadata>
 			{
 				// Add the song's metadata (just a Map<String, Object>) to the album metadata object (just a List<Map<String, Object>)
 				Media media = new Media(song.toUri().toString());
-				albumMetadata.getSongMetadata().add(media.getMetadata());
+
+				Map<String, Object> metadata = media.getMetadata();
+				albumMetadata.getSongMetadata().add(metadata);
 			}
 
 			// Add this album's metadata to the artist metadata object (ultimately making a List<List<Map<String, Object>>>)

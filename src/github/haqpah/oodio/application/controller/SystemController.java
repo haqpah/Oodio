@@ -7,53 +7,90 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.List;
 import java.util.Map;
 
 import org.apache.log4j.Logger;
 
+import github.haqpah.oodio.musiclibrary.AlbumMetadata;
 import github.haqpah.oodio.musiclibrary.ArtistMetadata;
 import github.haqpah.oodio.musiclibrary.MusicLibraryMetadata;
+import github.haqpah.oodio.musiclibrary.MusicLibrarySong;
+import github.haqpah.oodio.musiclibrary.MusicLibrarySongRow;
 import github.haqpah.oodio.services.ArtistMetadataLoaderService;
 import github.haqpah.oodio.services.SystemPathService;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
+import javafx.scene.Node;
+import javafx.scene.control.TableView;
+import javafx.scene.layout.AnchorPane;
 import javafx.scene.media.Media;
+import javafx.scene.media.MediaPlayer;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 
-/**
- * Controller for the system menu UI elements defined by SystemMenu.fxml
- *
- * @version 0.0.0.20170427
- * @since 0.0
- */
-public final class SystemMenuController extends AbstractController
+public class SystemController extends AbstractController implements FxmlController
 {
 	/**
 	 * The FXML file name for this controller
 	 */
-	private static final String FXML_FILENAME_ = "SystemMenu.fxml";
+	private final static String FXML_FILENAME_ = "System.fxml";
 
 	/**
-	 * The in memory music library containing metadata
+	 * The {@link MediaPlayer} that this controller can control
+	 */
+	private MediaPlayer systemPlayer_;
+
+	/**
+	 * The in-memory music library containing metadata
 	 */
 	private final MusicLibraryMetadata musicLibraryMetadata_;
 
-	/**
-	 * Controller for the system menu UI elements defined by SystemMenu.fxml
-	 *
-	 * @version 0.0.0.20170426
-	 * @since 0.0
-	 *
-	 * @param musicLibrary
-	 *            an in memory list of {@link Media}
-	 */
-	public SystemMenuController(final Stage primaryStage, final Logger systemLogger, final MusicLibraryMetadata musicLibraryMetadata)
+	public SystemController(Stage primaryStage, Logger systemLogger, MusicLibraryMetadata musicLibraryMetadata)
 	{
 		super(primaryStage, systemLogger, FXML_FILENAME_);
+
 		musicLibraryMetadata_ = musicLibraryMetadata;
+
+		// TODO loading default song
+		File file = new File("C:/Users/schel/Music/Instrumentals/Jay IDK - Two Hoes.mp3");
+		Media media = new Media(file.toURI().toString());
+		systemPlayer_ = new MediaPlayer(media);
+
+		// Add rows to the table
+		AnchorPane rootNode = (AnchorPane) getRootNode();
+		List<Node> children = rootNode.getChildren();
+		for(Node child : children)
+		{
+			if(child instanceof TableView)
+			{
+				@SuppressWarnings("unchecked")
+				TableView<MusicLibrarySongRow> tableView = (TableView<MusicLibrarySongRow>) child;
+
+				// Dig down into the in-memory metadata list to get the song metadata for each song to populate the table
+				for(ArtistMetadata artist : musicLibraryMetadata.getLibraryMetadata())
+				{
+					for(AlbumMetadata album : artist.getAlbumMetadata())
+					{
+						for(Map<String, Object> songMetadata : album.getSongMetadata())
+						{
+							MusicLibrarySong song = new MusicLibrarySong(songMetadata);
+							systemLogger.debug("Creating new row from song: " + song.toString());
+
+							MusicLibrarySongRow row = new MusicLibrarySongRow(song);
+							tableView.getItems().add(row);
+						}
+					}
+				}
+			}
+		}
 	}
 
+	/*************************************************
+	 *
+	 * SYSTEM MENU ACTIONS
+	 *
+	 *************************************************/
 	@FXML
 	public void newPlaylist(ActionEvent event)
 	{
@@ -81,7 +118,7 @@ public final class SystemMenuController extends AbstractController
 				discoverOrCreateDirectory(artistName);
 				discoverOrCreateDirectory(artistName, albumName);
 
-				// Discover or store the artist's metadata in the in memory music library metadata object
+				// Discover or store the artist's metadata in the in-memory music library metadata object
 				discoverOrStoreArtistMetadata(metadata);
 
 				// Place the song in the Music Library folder, unless its already in there
@@ -155,7 +192,7 @@ public final class SystemMenuController extends AbstractController
 	}
 
 	/**
-	 * Checks to see if the artist's metadata is stored in memory. If not, adds it to the storage
+	 * Checks to see if the artist's metadata is stored in-memory. If not, adds it to the storage
 	 *
 	 * @version 0.0.0.20170429
 	 * @since 0.0
@@ -180,16 +217,16 @@ public final class SystemMenuController extends AbstractController
 		{
 			// XXX: At this point of execution, the artist path is guaranteed to exist. Checks have already occurred
 			Path artistDirectory = SystemPathService.getMusicLibraryDirectory().resolve(artistName);
-			ArtistMetadataLoaderService artistLoader = new ArtistMetadataLoaderService(artistDirectory);
+			ArtistMetadataLoaderService artistLoader = new ArtistMetadataLoaderService(artistDirectory, getSystemLogger());
 
 			try
 			{
-				ArtistMetadata artistMetadata = artistLoader.call();
+				ArtistMetadata artistMetadata = artistLoader.traverseArtistDirectory();
 				musicLibraryMetadata_.getLibraryMetadata().add(artistMetadata);
 			}
 			catch (Exception e)
 			{
-				getSystemLogger().error("Could not store new artist metadata in memory");
+				getSystemLogger().error("Could not store new artist metadata in-memory");
 			}
 		}
 	}
@@ -259,12 +296,56 @@ public final class SystemMenuController extends AbstractController
 	}
 
 	/**
-	 * @version 0.0.0.20170426
+	 *
+	 * SYSTEM PLAYER ACTIONS
+	 *
+	 */
+
+	/**
+	 * Plays the loaded track
+	 *
+	 * @version 0.0.0.20170425
+	 * @since 0.0
+	 */
+	@FXML
+	protected void playTrack(ActionEvent event)
+	{
+		systemPlayer_.play();
+	}
+
+	/**
+	 * Pauses the loaded track
+	 *
+	 * @version 0.0.0.20170425
+	 * @since 0.0
+	 */
+	@FXML
+	protected void pauseTrack(ActionEvent event)
+	{
+		systemPlayer_.pause();
+	}
+
+	/**
+	 * Stops the loaded track
+	 *
+	 * @version 0.0.0.20170425
+	 * @since 0.0
+	 */
+	@FXML
+	protected void stopTrack(ActionEvent event)
+	{
+		systemPlayer_.stop();
+	}
+
+	/**
+	 * @version 0.0.0.20170430
 	 * @since 0.0
 	 */
 	@Override
 	public String getFxmlFilename()
 	{
+
 		return FXML_FILENAME_;
 	}
+
 }

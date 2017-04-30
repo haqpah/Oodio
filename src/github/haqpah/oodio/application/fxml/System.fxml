@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.shape.*?>
+<?import javafx.geometry.*?>
+<?import javafx.scene.control.*?>
+<?import java.lang.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.control.cell.*?>
+
+<AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" pickOnBounds="false" prefHeight="612.0" prefWidth="968.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1">
+   <children>
+      <MenuBar prefHeight="5.0" prefWidth="685.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+        <menus>
+          <Menu mnemonicParsing="true" text="_File">
+            <items>
+              <Menu mnemonicParsing="true" text="_Library">
+                <items>
+                  <MenuItem mnemonicParsing="true" text="Add _track..." />
+                  <MenuItem mnemonicParsing="true" text="Add _album..." />
+                </items>
+              </Menu>
+              <MenuItem mnemonicParsing="true" text="_New playlist" />
+              <SeparatorMenuItem mnemonicParsing="false" />
+              <MenuItem mnemonicParsing="true" text="_Close" />
+            </items>
+          </Menu>
+          <Menu mnemonicParsing="true" text="_Edit">
+            <items>
+              <MenuItem mnemonicParsing="true" text="_Play" />
+                  <MenuItem mnemonicParsing="true" text="P_ause" />
+                  <MenuItem mnemonicParsing="true" text="_Stop" />
+                  <SeparatorMenuItem mnemonicParsing="false" />
+                  <MenuItem mnemonicParsing="true" text="Pre_ferences" />
+            </items>
+          </Menu>
+            <Menu mnemonicParsing="true" text="_Help">
+               <items>
+                  <MenuItem mnemonicParsing="true" text="_About" />
+                  <MenuItem mnemonicParsing="true" text="_Wiki" />
+               </items>
+            </Menu>
+        </menus>
+      </MenuBar>
+      <TableView layoutX="15.0" layoutY="48.0" prefHeight="466.0" prefWidth="968.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="75.0">
+        <columns>
+          <TableColumn minWidth="150.0" prefWidth="250.0" text="Title">
+          	<cellValueFactory><PropertyValueFactory property="title" /></cellValueFactory>
+          </TableColumn>
+          <TableColumn minWidth="100.0" prefWidth="98.0" text="Artist">
+          	<cellValueFactory><PropertyValueFactory property="artist" /></cellValueFactory>
+          </TableColumn>
+          <TableColumn prefWidth="130.0" text="Album">
+          	<cellValueFactory><PropertyValueFactory property="album" /></cellValueFactory>
+          </TableColumn>
+          <TableColumn minWidth="25.0" prefWidth="142.0" text="Genre">
+          	<cellValueFactory><PropertyValueFactory property="genre" /></cellValueFactory>
+          </TableColumn>
+          <TableColumn prefWidth="50.0" text="Year">
+          	<cellValueFactory><PropertyValueFactory property="year" /></cellValueFactory>
+          </TableColumn>
+        </columns>
+        <columnResizePolicy>
+          <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
+        </columnResizePolicy>
+      </TableView>
+      <ListView layoutX="213.0" layoutY="25.0" maxHeight="50.0" maxWidth="747.0" minHeight="25.0" minWidth="50.0" orientation="HORIZONTAL" prefHeight="50.0" prefWidth="747.0" AnchorPane.leftAnchor="210.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="25.0" />
+      <Button layoutX="14.0" layoutY="38.0" maxHeight="25.0" maxWidth="25.0" minHeight="30.0" minWidth="30.0" mnemonicParsing="false" prefHeight="25.0" prefWidth="25.0" text="|&lt;" AnchorPane.leftAnchor="10.0" AnchorPane.topAnchor="35.0" />
+      <Button layoutX="53.0" layoutY="35.0" maxHeight="25.0" maxWidth="25.0" minHeight="30.0" minWidth="30.0" mnemonicParsing="false" prefHeight="25.0" prefWidth="25.0" text="&gt;|" AnchorPane.leftAnchor="50.0" AnchorPane.topAnchor="35.0" />
+      <Button layoutX="99.0" layoutY="35.0" maxHeight="25.0" maxWidth="25.0" minHeight="30.0" minWidth="30.0" mnemonicParsing="false" prefHeight="25.0" prefWidth="25.0" text="&gt;" AnchorPane.leftAnchor="90.0" AnchorPane.topAnchor="35.0" onAction="#playTrack" />
+      <Button layoutX="137.0" layoutY="35.0" maxHeight="25.0" maxWidth="25.0" minHeight="30.0" minWidth="30.0" mnemonicParsing="false" prefHeight="25.0" prefWidth="25.0" text="||" AnchorPane.leftAnchor="130.0" AnchorPane.topAnchor="35.0" onAction="#pauseTrack" />
+      <Button layoutX="173.0" layoutY="35.0" maxHeight="25.0" maxWidth="25.0" minHeight="30.0" minWidth="30.0" mnemonicParsing="false" prefHeight="25.0" prefWidth="25.0" text="O" AnchorPane.leftAnchor="170.0" AnchorPane.topAnchor="35.0" onAction="#pauseTrack" />
+   </children>
+</AnchorPane>
