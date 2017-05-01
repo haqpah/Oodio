@@ -1,6 +1,13 @@
 package github.haqpah.oodio.musiclibrary;
 
-import java.util.Map;
+import java.io.File;
+import java.io.UnsupportedEncodingException;
+import java.nio.file.Path;
+
+import org.apache.log4j.Logger;
+
+import javafx.collections.MapChangeListener;
+import javafx.scene.media.Media;
 
 /**
  * POJO containing values to be transformed into a {@link MusicLibraryRow}
@@ -10,6 +17,11 @@ import java.util.Map;
  */
 public class MusicLibrarySong
 {
+	/**
+	 * The file path for this song
+	 */
+	private Path filePath_;
+
 	/**
 	 * The title of the song
 	 */
@@ -40,32 +52,85 @@ public class MusicLibrarySong
 	 *
 	 * @version 0.0.0.20170430
 	 * @since 0.0
+	 *
+	 * @param filePath
+	 *            the file path for the song to make this object from
+	 *
+	 * @throws IllegalArgumentException
+	 *             if the passed filepah is not valid
+	 * @throws InterruptedException
+	 *             if the thread is interrupted while loading new media
+	 * @throws UnsupportedEncodingException
+	 *             if the filepath cannot be encoded using UTF-8
 	 */
-	public MusicLibrarySong(Map<String, Object> rawMetadata)
+	public MusicLibrarySong(Path filePath, Logger systemLogger) throws IllegalArgumentException, InterruptedException, UnsupportedEncodingException
 	{
-		for(String key : rawMetadata.keySet())
-		{
-			switch (key)
+		filePath_ = filePath;
+
+		String filePathString = filePath_.toUri().toString();
+		Media media = new Media(filePathString);
+
+		// TODO research asynch on #getMetadata
+		media.getMetadata().addListener((MapChangeListener<? super String, ? super Object>) c -> {
+			if(c.wasAdded())
 			{
-				case "title":
-					title_ = (String) rawMetadata.get(key);
-					break;
-				case "artist":
-					artist_ = (String) rawMetadata.get(key);
-					break;
-				case "album":
-					album_ = (String) rawMetadata.get(key);
-					break;
-				case "genre":
-					genre_ = (String) rawMetadata.get(key);
-					break;
-				case "year":
-					year_ = String.valueOf(rawMetadata.get(key));
-					break;
-				default:
-					; // do nothing
+				if("artist".equals(c.getKey()))
+				{
+					artist_ = c.getValueAdded().toString();
+				}
+				else if("title".equals(c.getKey()))
+				{
+					title_ = c.getValueAdded().toString();
+				}
+				else if("album".equals(c.getKey()))
+				{
+					album_ = c.getValueAdded().toString();
+				}
+				else if("genre".equals(c.getKey()))
+				{
+					genre_ = c.getValueAdded().toString();
+				}
+				else if("year".equals(c.getKey()))
+				{
+					year_ = c.getValueAdded().toString();
+				}
 			}
-		}
+		});
+
+		Thread.sleep(250); // TODO remove once asynch is figured out
+	}
+
+	/**
+	 * POJO containing values to be transformed into a {@link MusicLibraryRow}
+	 *
+	 * @version 0.0.0.20170430
+	 * @since 0.0
+	 *
+	 * @param file
+	 *            the file to make this object from
+	 * @return
+	 * @throws InterruptedException
+	 *             if the thread is interrupted while loading new media
+	 * @throws UnsupportedEncodingException
+	 *             if the filepath cannot be encoded using UTF-8
+	 */
+	public MusicLibrarySong(File file, Logger systemLogger) throws InterruptedException, UnsupportedEncodingException
+	{
+		// TODO validate string
+		this(file.toPath(), systemLogger);
+	}
+
+	/**
+	 * Accessor for the song's file path
+	 *
+	 * @version 0.0.0.20170430
+	 * @since 0.0
+	 *
+	 * @return the file path
+	 */
+	public Path getFilePath()
+	{
+		return filePath_;
 	}
 
 	/**

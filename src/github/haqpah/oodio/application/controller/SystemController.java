@@ -3,21 +3,16 @@ package github.haqpah.oodio.application.controller;
 import java.awt.Desktop;
 import java.io.File;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.List;
-import java.util.Map;
 
 import org.apache.log4j.Logger;
 
-import github.haqpah.oodio.musiclibrary.AlbumMetadata;
-import github.haqpah.oodio.musiclibrary.ArtistMetadata;
-import github.haqpah.oodio.musiclibrary.MusicLibraryMetadata;
+import github.haqpah.oodio.musiclibrary.MusicLibrary;
 import github.haqpah.oodio.musiclibrary.MusicLibrarySong;
 import github.haqpah.oodio.musiclibrary.MusicLibrarySongRow;
-import github.haqpah.oodio.services.ArtistMetadataLoaderService;
 import github.haqpah.oodio.services.SystemPathService;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -29,6 +24,12 @@ import javafx.scene.media.MediaPlayer;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 
+/**
+ * TODO
+ *
+ * @version 0.0.0.20170430
+ * @since 0.0
+ */
 public class SystemController extends AbstractController implements FxmlController
 {
 	/**
@@ -42,47 +43,78 @@ public class SystemController extends AbstractController implements FxmlControll
 	private MediaPlayer systemPlayer_;
 
 	/**
-	 * The in-memory music library containing metadata
+	 * TODO
 	 */
-	private final MusicLibraryMetadata musicLibraryMetadata_;
+	private TableView<MusicLibrarySongRow> musicLibraryTableView_;
 
-	public SystemController(Stage primaryStage, Logger systemLogger, MusicLibraryMetadata musicLibraryMetadata)
+	/**
+	 * TODO
+	 */
+	private MusicLibrary musicLibrary_;
+
+	/**
+	 * TODO
+	 * Constructor
+	 *
+	 * @version 0.0.0.20170430
+	 * @since 0.0
+	 *
+	 * @param primaryStage
+	 * @param systemLogger
+	 * @param musicLibrary
+	 */
+	public SystemController(Stage primaryStage, Logger systemLogger, MusicLibrary musicLibrary)
 	{
 		super(primaryStage, systemLogger, FXML_FILENAME_);
 
-		musicLibraryMetadata_ = musicLibraryMetadata;
+		musicLibrary_ = musicLibrary;
 
-		// TODO loading default song
-		File file = new File("C:/Users/schel/Music/Instrumentals/Jay IDK - Two Hoes.mp3");
-		Media media = new Media(file.toURI().toString());
-		systemPlayer_ = new MediaPlayer(media);
+		// Load default song
+		if(musicLibrary.getLibrary() != null)
+		{
+			MusicLibrarySong defaultSong = musicLibrary.getLibrary().get(0);
+			Media defaultMedia = new Media(defaultSong.getFilePath().toUri().toString());
+			systemPlayer_ = new MediaPlayer(defaultMedia);
+		}
+		else
+		{
+			Media helloWorldMedia = new Media(SystemPathService.getHelloWorldMediaPath().toString());
+			systemPlayer_ = new MediaPlayer(helloWorldMedia);
+		}
 
-		// Add rows to the table
+		// Get the system music library table view object
 		AnchorPane rootNode = (AnchorPane) getRootNode();
 		List<Node> children = rootNode.getChildren();
 		for(Node child : children)
 		{
 			if(child instanceof TableView)
 			{
-				@SuppressWarnings("unchecked")
-				TableView<MusicLibrarySongRow> tableView = (TableView<MusicLibrarySongRow>) child;
-
-				// Dig down into the in-memory metadata list to get the song metadata for each song to populate the table
-				for(ArtistMetadata artist : musicLibraryMetadata.getLibraryMetadata())
-				{
-					for(AlbumMetadata album : artist.getAlbumMetadata())
-					{
-						for(Map<String, Object> songMetadata : album.getSongMetadata())
-						{
-							MusicLibrarySong song = new MusicLibrarySong(songMetadata);
-							systemLogger.debug("Creating new row from song: " + song.toString());
-
-							MusicLibrarySongRow row = new MusicLibrarySongRow(song);
-							tableView.getItems().add(row);
-						}
-					}
-				}
+				musicLibraryTableView_ = (TableView<MusicLibrarySongRow>) child;
 			}
+		}
+
+		// Add songs to the in-memory music library
+		addSongsToTableView(musicLibrary_.getLibrary());
+	}
+
+	/**
+	 * Adds a group of {@link MusicLibrarySong} to the table view.
+	 * <p>
+	 * Does <strong>not</strong> add the file to the music library directory
+	 *
+	 * @version 0.0.0.20170430
+	 * @since 0.0
+	 *
+	 * @param songsToAdd
+	 *            the songs to add to the table view
+	 */
+	private void addSongsToTableView(List<MusicLibrarySong> songsToAdd)
+	{
+		for(MusicLibrarySong song : songsToAdd)
+		{
+			getSystemLogger().debug("Building new row from song: " + song.toString());
+			MusicLibrarySongRow row = new MusicLibrarySongRow(song);
+			musicLibraryTableView_.getItems().add(row);
 		}
 	}
 
@@ -97,6 +129,15 @@ public class SystemController extends AbstractController implements FxmlControll
 		throw new UnsupportedOperationException("Oodio does not yet support playlists");
 	}
 
+	/**
+	 * Adds the selected file to the in-memory music library, the table view, and to the music library directory
+	 *
+	 * @version 0.0.0.20170430
+	 * @since 0.0
+	 *
+	 * @param event
+	 *            the {@link ActionEvent} that triggered this method
+	 */
 	@FXML
 	public void addTrackToLibrary(ActionEvent event)
 	{
@@ -105,129 +146,31 @@ public class SystemController extends AbstractController implements FxmlControll
 
 		if(file != null)
 		{
+			MusicLibrarySong song = null;
 			try
 			{
-				// Gets the songs metadata
-				Media media = new Media(file.toURI().toString());
-				Map<String, Object> metadata = media.getMetadata();
-
-				String artistName = (String) metadata.get("artist name");
-				String albumName = (String) metadata.get("album");
-
-				// Discover the artist and album directory, create it if not found
-				discoverOrCreateDirectory(artistName);
-				discoverOrCreateDirectory(artistName, albumName);
-
-				// Discover or store the artist's metadata in the in-memory music library metadata object
-				discoverOrStoreArtistMetadata(metadata);
-
-				// Place the song in the Music Library folder, unless its already in there
-				// TODO does not work at the moment -> Files.copy(Paths.get(file.toURI()), SystemPathService.getMusicLibraryDirectory());
+				song = new MusicLibrarySong(file, getSystemLogger());
+				getSystemLogger().debug("Adding new song to music library: " + song.toString());
 			}
-			catch (IOException e)
+			catch (InterruptedException | UnsupportedEncodingException e)
 			{
-				// TODO inform user
-
-				// Get the file's extension
-				int beginIndex = file.getPath().lastIndexOf(".");
-				String extension = file.getPath().substring(beginIndex, file.getPath().length());
-
-				StringBuilder logMessage = new StringBuilder();
-				logMessage.append("Could not add file to library" + System.lineSeparator())
-						.append("  Path: " + file.getPath() + System.lineSeparator())
-						.append("  Ext:  " + extension);
-
-				addLog(logMessage.toString(), e);
+				getSystemLogger().error("Could not add song to library", e);
 			}
-		}
-	}
 
-	/**
-	 * Looks in the music library folder for the folder. If not found, creates it
-	 *
-	 * @version 0.0.0.20170429
-	 * @since 0.0
-	 *
-	 * @param folderName
-	 *            the name of the folder to look for, likely an artist's name
-	 *
-	 * @return the passed directory as a {@link Path}
-	 * @throws IOException
-	 *             if the directory could not be created
-	 */
-	private Path discoverOrCreateDirectory(String folderName) throws IOException
-	{
-		// Create the artist directory if it does not exist
-		Path artistDirectory = SystemPathService.getMusicLibraryDirectory().resolve(folderName);
-		if(!Files.exists(artistDirectory))
-		{
-			// Create the artist directory in the system's music library folder
-			Files.createDirectory(artistDirectory);
-		}
-
-		return artistDirectory;
-	}
-
-	/**
-	 * Looks in the music library folder for the passed child folder underneath
-	 * the passed parent folder. If not found, creates it.
-	 *
-	 * @version 0.0.0.20170429
-	 * @since 0.0
-	 *
-	 * @param parent
-	 *            the name of the parent folder to resolve to, likely an artist's name
-	 * @param child
-	 *            the name of the child folder to resolve to, likely an album name
-	 *
-	 * @return the passed child folder name as a {@link Path}
-	 * @throws IOException
-	 *             if the directory could not be created
-	 */
-	private Path discoverOrCreateDirectory(String parent, String child) throws IOException
-	{
-		Path childDirectory = SystemPathService.getMusicLibraryDirectory().resolve(parent).resolve(child);
-
-		return discoverOrCreateDirectory(childDirectory.toString());
-	}
-
-	/**
-	 * Checks to see if the artist's metadata is stored in-memory. If not, adds it to the storage
-	 *
-	 * @version 0.0.0.20170429
-	 * @since 0.0
-	 *
-	 * @param metadata
-	 *            the metadata to discover or store
-	 */
-	private void discoverOrStoreArtistMetadata(Map<String, Object> metadata)
-	{
-		String artistName = (String) metadata.get("artist name");
-
-		boolean found = false;
-		for(ArtistMetadata artistMetadata : musicLibraryMetadata_.getLibraryMetadata())
-		{
-			if(artistMetadata.getArtistName().equals(artistName))
+			// Add it to the in-memory library
+			if(!musicLibrary_.getLibrary().contains(song))
 			{
-				found = true;
+				musicLibrary_.getLibrary().add(song);
+				getSystemLogger().debug("Song added to in-memory library: " + song.toString());
 			}
-		}
 
-		if(!found)
-		{
-			// XXX: At this point of execution, the artist path is guaranteed to exist. Checks have already occurred
-			Path artistDirectory = SystemPathService.getMusicLibraryDirectory().resolve(artistName);
-			ArtistMetadataLoaderService artistLoader = new ArtistMetadataLoaderService(artistDirectory, getSystemLogger());
+			// Add it to the table view
+			musicLibraryTableView_.getItems().add(new MusicLibrarySongRow(song));
+			getSystemLogger().debug("Song added to table view: " + song.toString());
 
-			try
-			{
-				ArtistMetadata artistMetadata = artistLoader.traverseArtistDirectory();
-				musicLibraryMetadata_.getLibraryMetadata().add(artistMetadata);
-			}
-			catch (Exception e)
-			{
-				getSystemLogger().error("Could not store new artist metadata in-memory");
-			}
+			// Add it to the music library directory
+			// TODO
+			getSystemLogger().debug("TODO Song added to music library directory in file system: " + song.toString());
 		}
 	}
 
@@ -244,6 +187,10 @@ public class SystemController extends AbstractController implements FxmlControll
 	{
 		// TODO hook into application stop somehow?
 		getSystemLogger().info("Exiting application via system menu");
+
+		// TODO
+		getSystemLogger().shutdown();
+
 		System.exit(0);
 	}
 

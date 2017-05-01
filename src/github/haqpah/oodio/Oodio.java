@@ -9,7 +9,7 @@ import org.apache.log4j.PropertyConfigurator;
 
 import github.haqpah.oodio.application.controller.FxmlController;
 import github.haqpah.oodio.application.controller.SystemController;
-import github.haqpah.oodio.musiclibrary.MusicLibraryMetadata;
+import github.haqpah.oodio.musiclibrary.MusicLibrary;
 import github.haqpah.oodio.services.SystemPathService;
 import javafx.application.Application;
 import javafx.scene.Scene;
@@ -53,7 +53,7 @@ public class Oodio extends Application
 	 * This is a collection of artist metadata, which contains album metadata for each album in
 	 * the artist's directory. Each album metadata contains a list of metadata objects for each song.
 	 */
-	public static MusicLibraryMetadata musicLibraryMetadata_;
+	public static MusicLibrary musicLibrary_;
 
 	/**
 	 * The main method for the Oodio media player
@@ -70,16 +70,15 @@ public class Oodio extends Application
 		systemLogger_ = Logger.getLogger("rootLogger");
 		systemLogger_.info(APPLICATION_NAME_ + " has begun execution");
 
+		discoverOrCreateMusicLibraryDirectory();
+
 		try
 		{
-			loadMusicLibrary();
-
-			// Thread.sleep(5000);
+			musicLibrary_ = new MusicLibrary(SystemPathService.getMusicLibraryDirectory(), systemLogger_);
 		}
 		catch (Exception e)
 		{
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			systemLogger_.error("Could not load music library", e);
 		}
 
 		systemLogger_.info("Launching application");
@@ -87,40 +86,27 @@ public class Oodio extends Application
 	}
 
 	/**
-	 * Convenience method for housing logic for setting up the application's music library view. This
-	 * entails searching for an existing music folder and traversing all directories, or creating the
-	 * folder if one is not found.
-	 * <p>
-	 * The music library loaded in-memory. <strong>This is not a collection of playable media files!</strong>
-	 * <p>
-	 * This is a collection of artist metadata, which contains album metadata for each album in
-	 * the artist's directory. Each album metadata contains a list of metadata objects for each song.
+	 * Discovers an existing music library directory. If one is not found, creates it.
 	 *
-	 * @version 0.0.0.20170427
-	 * @throws Exception
+	 * @version 0.0.0.20170430
 	 * @since 0.0
 	 */
-	private static void loadMusicLibrary() throws Exception
+	private static void discoverOrCreateMusicLibraryDirectory()
 	{
-		try
-		{
-			Path library = SystemPathService.getMusicLibraryDirectory();
+		Path library = SystemPathService.getMusicLibraryDirectory();
 
-			// Search for an existing library
-			if(!Files.exists(library))
+		// Search for an existing library
+		if(!Files.exists(library))
+		{
+			try
 			{
 				// Create the library
 				Files.createDirectory(library);
 			}
-
-			musicLibraryMetadata_ = new MusicLibraryMetadata(library, systemLogger_);
-
-			systemLogger_.info("Music library has successfully be loaded");
-
-		}
-		catch (IOException e)
-		{
-			systemLogger_.fatal("An exception occurred while loading the music library", e);
+			catch (IOException e)
+			{
+				systemLogger_.error("Could not create music library directory at " + library.toUri().toString(), e);
+			}
 		}
 	}
 
@@ -136,18 +122,7 @@ public class Oodio extends Application
 		primaryStage_ = primaryStage;
 		primaryStage_.setTitle(APPLICATION_NAME_);
 
-		// BorderPane root = new BorderPane();
-
-		// FxmlController systemMenuController = new SystemMenuController(primaryStage_, systemLogger_, musicLibraryMetadata_);
-		// root.setTop(systemMenuController.getRootNode());
-		//
-		// FxmlController musicLibraryController = new MusicLibraryController(primaryStage_, systemLogger_, musicLibraryMetadata_);
-		// root.setCenter(musicLibraryController.getRootNode());
-		//
-		// FxmlController systemPlayerController = new SystemPlayerController(primaryStage_, systemLogger_);
-		// root.setBottom(systemPlayerController.getRootNode());
-
-		FxmlController systemController = new SystemController(primaryStage_, systemLogger_, musicLibraryMetadata_);
+		FxmlController systemController = new SystemController(primaryStage_, systemLogger_, musicLibrary_);
 
 		primaryStage_.setScene(new Scene((AnchorPane) systemController.getRootNode()));
 		primaryStage_.setMaximized(true);

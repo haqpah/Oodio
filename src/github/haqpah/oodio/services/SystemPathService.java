@@ -50,15 +50,28 @@ public class SystemPathService
 	}
 
 	/**
-	 * Gets the {@link Path} for this Oodio's music library. The application:musicLibrary relationship is always 1:1
+	 * Gets the {@link String} for this Oodio's music library path
 	 *
 	 * @version 0.0.0.20170429
 	 * @since 0.0
 	 *
-	 * @return
+	 * @return the file path as a string
 	 */
 	public static Path getMusicLibraryDirectory()
 	{
-		return Paths.get("Music Library");
+		return Paths.get(System.getProperty("user.home"), "Music", "Oodio Music Library");
+	}
+
+	/**
+	 * Gets the {@link Path} for the default song to be loaded into the system player. This mp3 is shipped with the installation
+	 *
+	 * @version 0.0.0.20170430
+	 * @since 0.0
+	 *
+	 * @return the hello world mp3
+	 */
+	public static Path getHelloWorldMediaPath()
+	{
+		return Paths.get("helloworld.mp3");
 	}
 }

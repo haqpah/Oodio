@@ -15,28 +15,28 @@
             <items>
               <Menu mnemonicParsing="true" text="_Library">
                 <items>
-                  <MenuItem mnemonicParsing="true" text="Add _track..." />
+                  <MenuItem mnemonicParsing="true" text="Add _track..." onAction="#addTrackToLibrary" />
                   <MenuItem mnemonicParsing="true" text="Add _album..." />
                 </items>
               </Menu>
               <MenuItem mnemonicParsing="true" text="_New playlist" />
               <SeparatorMenuItem mnemonicParsing="false" />
-              <MenuItem mnemonicParsing="true" text="_Close" />
+              <MenuItem mnemonicParsing="true" text="_Exit" onAction="#exitApplication"/>
             </items>
           </Menu>
           <Menu mnemonicParsing="true" text="_Edit">
             <items>
-              <MenuItem mnemonicParsing="true" text="_Play" />
-                  <MenuItem mnemonicParsing="true" text="P_ause" />
-                  <MenuItem mnemonicParsing="true" text="_Stop" />
+              <MenuItem mnemonicParsing="true" text="_Play" onAction="#playTrack" />
+                  <MenuItem mnemonicParsing="true" text="P_ause" onAction="#pauseTrack" />
+                  <MenuItem mnemonicParsing="true" text="_Stop" onAction="#stopTrack" />
                   <SeparatorMenuItem mnemonicParsing="false" />
                   <MenuItem mnemonicParsing="true" text="Pre_ferences" />
             </items>
           </Menu>
             <Menu mnemonicParsing="true" text="_Help">
                <items>
-                  <MenuItem mnemonicParsing="true" text="_About" />
-                  <MenuItem mnemonicParsing="true" text="_Wiki" />
+                  <MenuItem mnemonicParsing="true" text="_About" onAction="#about" />
+                  <MenuItem mnemonicParsing="true" text="_Wiki" onAction="#wiki" />
                </items>
             </Menu>
         </menus>
