@@ -73,7 +73,8 @@ public class Oodio extends Application
 		}
 
 		systemLogger_.info("Launching application");
-		launch(args);
+
+		launch();
 	}
 
 	/**
