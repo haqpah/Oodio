@@ -3,7 +3,6 @@ package github.haqpah.oodio.application.controller;
 import java.awt.Desktop;
 import java.io.File;
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.List;
@@ -11,8 +10,8 @@ import java.util.List;
 import org.apache.log4j.Logger;
 
 import github.haqpah.oodio.musiclibrary.MusicLibrary;
-import github.haqpah.oodio.musiclibrary.MusicLibrarySong;
-import github.haqpah.oodio.musiclibrary.MusicLibrarySongRow;
+import github.haqpah.oodio.musiclibrary.MusicLibraryTrack;
+import github.haqpah.oodio.musiclibrary.MusicLibraryTrackRow;
 import github.haqpah.oodio.services.SystemPathService;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -45,7 +44,7 @@ public class SystemController extends AbstractController implements FxmlControll
 	/**
 	 * TODO
 	 */
-	private TableView<MusicLibrarySongRow> musicLibraryTableView_;
+	private TableView<MusicLibraryTrackRow> musicLibraryTableView_;
 
 	/**
 	 * TODO
@@ -69,10 +68,10 @@ public class SystemController extends AbstractController implements FxmlControll
 
 		musicLibrary_ = musicLibrary;
 
-		// Load default song
-		if(musicLibrary.getLibrary() != null)
+		// Load default track
+		if(!musicLibrary.isEmpty())
 		{
-			MusicLibrarySong defaultSong = musicLibrary.getLibrary().get(0);
+			MusicLibraryTrack defaultSong = musicLibrary.getFirst();
 			Media defaultMedia = new Media(defaultSong.getFilePath().toUri().toString());
 			systemPlayer_ = new MediaPlayer(defaultMedia);
 		}
@@ -89,7 +88,7 @@ public class SystemController extends AbstractController implements FxmlControll
 		{
 			if(child instanceof TableView)
 			{
-				musicLibraryTableView_ = (TableView<MusicLibrarySongRow>) child;
+				musicLibraryTableView_ = (TableView<MusicLibraryTrackRow>) child;
 			}
 		}
 
@@ -98,7 +97,7 @@ public class SystemController extends AbstractController implements FxmlControll
 	}
 
 	/**
-	 * Adds a group of {@link MusicLibrarySong} to the table view.
+	 * Adds a group of {@link MusicLibraryTrack} to the table view.
 	 * <p>
 	 * Does <strong>not</strong> add the file to the music library directory
 	 *
@@ -108,12 +107,13 @@ public class SystemController extends AbstractController implements FxmlControll
 	 * @param songsToAdd
 	 *            the songs to add to the table view
 	 */
-	private void addSongsToTableView(List<MusicLibrarySong> songsToAdd)
+	private void addSongsToTableView(List<MusicLibraryTrack> songsToAdd)
 	{
-		for(MusicLibrarySong song : songsToAdd)
+		for(MusicLibraryTrack track : songsToAdd)
 		{
-			getSystemLogger().debug("Building new row from song: " + song.toString());
-			MusicLibrarySongRow row = new MusicLibrarySongRow(song);
+			getSystemLogger().debug("Building new row from track: " + track.toString());
+			MusicLibraryTrackRow row = new MusicLibraryTrackRow(track);
+
 			musicLibraryTableView_.getItems().add(row);
 		}
 	}
@@ -137,40 +137,38 @@ public class SystemController extends AbstractController implements FxmlControll
 	 *
 	 * @param event
 	 *            the {@link ActionEvent} that triggered this method
+	 * @throws Exception
+	 *             if the track could not be added to the library
 	 */
 	@FXML
-	public void addTrackToLibrary(ActionEvent event)
+	public void addTrackToLibrary(ActionEvent event) throws Exception
 	{
 		FileChooser fileChooser = new FileChooser();
 		File file = fileChooser.showOpenDialog(getPrimaryStage());
 
 		if(file != null)
 		{
-			MusicLibrarySong song = null;
 			try
 			{
-				song = new MusicLibrarySong(file, getSystemLogger());
-				getSystemLogger().debug("Adding new song to music library: " + song.toString());
+				MusicLibraryTrack track = new MusicLibraryTrack(file, getSystemLogger());
+
+				// Add it to the in-memory library
+				if(!musicLibrary_.getLibrary().contains(track))
+				{
+					musicLibrary_.getLibrary().add(track);
+				}
+
+				// TODO Add it to the music library directory
+				getSystemLogger().debug("TODO Track added to music library directory in file system: " + track.toString());
+
+				// Add it to the table view once its been added to more important systems
+				MusicLibraryTrackRow row = new MusicLibraryTrackRow(track);
+				musicLibraryTableView_.getItems().add(row);
 			}
-			catch (InterruptedException | UnsupportedEncodingException e)
+			catch (Exception e)
 			{
-				getSystemLogger().error("Could not add song to library", e);
+				throw new Exception("Could not add track to library", e);
 			}
-
-			// Add it to the in-memory library
-			if(!musicLibrary_.getLibrary().contains(song))
-			{
-				musicLibrary_.getLibrary().add(song);
-				getSystemLogger().debug("Song added to in-memory library: " + song.toString());
-			}
-
-			// Add it to the table view
-			musicLibraryTableView_.getItems().add(new MusicLibrarySongRow(song));
-			getSystemLogger().debug("Song added to table view: " + song.toString());
-
-			// Add it to the music library directory
-			// TODO
-			getSystemLogger().debug("TODO Song added to music library directory in file system: " + song.toString());
 		}
 	}
 
@@ -185,12 +183,9 @@ public class SystemController extends AbstractController implements FxmlControll
 	@FXML
 	public void exitApplication(ActionEvent event)
 	{
-		// TODO hook into application stop somehow?
 		getSystemLogger().info("Exiting application via system menu");
 
-		// TODO
-		getSystemLogger().shutdown();
-
+		getSystemLogger().shutdown(); // TODO
 		System.exit(0);
 	}
 

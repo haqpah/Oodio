@@ -1,9 +1,5 @@
 package github.haqpah.oodio;
 
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-
 import org.apache.log4j.Logger;
 import org.apache.log4j.PropertyConfigurator;
 
@@ -48,10 +44,7 @@ public class Oodio extends Application
 	public static Stage primaryStage_;
 
 	/**
-	 * The music library loaded in-memory. <strong>This is not a collection of playable media files!</strong>
-	 * <p>
-	 * This is a collection of artist metadata, which contains album metadata for each album in
-	 * the artist's directory. Each album metadata contains a list of metadata objects for each song.
+	 * The music library loaded in-memory. This is <strong>not</strong> a collection of playable media files!
 	 */
 	public static MusicLibrary musicLibrary_;
 
@@ -70,8 +63,6 @@ public class Oodio extends Application
 		systemLogger_ = Logger.getLogger("rootLogger");
 		systemLogger_.info(APPLICATION_NAME_ + " has begun execution");
 
-		discoverOrCreateMusicLibraryDirectory();
-
 		try
 		{
 			musicLibrary_ = new MusicLibrary(SystemPathService.getMusicLibraryDirectory(), systemLogger_);
@@ -83,31 +74,6 @@ public class Oodio extends Application
 
 		systemLogger_.info("Launching application");
 		launch(args);
-	}
-
-	/**
-	 * Discovers an existing music library directory. If one is not found, creates it.
-	 *
-	 * @version 0.0.0.20170430
-	 * @since 0.0
-	 */
-	private static void discoverOrCreateMusicLibraryDirectory()
-	{
-		Path library = SystemPathService.getMusicLibraryDirectory();
-
-		// Search for an existing library
-		if(!Files.exists(library))
-		{
-			try
-			{
-				// Create the library
-				Files.createDirectory(library);
-			}
-			catch (IOException e)
-			{
-				systemLogger_.error("Could not create music library directory at " + library.toUri().toString(), e);
-			}
-		}
 	}
 
 	/**
@@ -130,15 +96,16 @@ public class Oodio extends Application
 	}
 
 	/**
-	 * Gets the system logger
-	 *
-	 * @version 0.0.0.20170423
+	 * @version 0.0.0.20170501
 	 * @since 0.0
-	 *        m
-	 * @return the system logger
 	 */
-	public static Logger getSystemLogger()
+	@Override
+	public void stop() throws Exception
 	{
-		return systemLogger_;
+		systemLogger_.info("Exiting application via X button");
+		systemLogger_.shutdown(); // TODO
+
+		super.stop();
+		System.exit(0);
 	}
 }

@@ -1,6 +1,7 @@
 package github.haqpah.oodio.musiclibrary;
 
 import javafx.beans.property.SimpleStringProperty;
+import javafx.beans.property.StringProperty;
 
 /**
  * A row to be submitted to the music library table view, populated with the passed metadata
@@ -8,49 +9,61 @@ import javafx.beans.property.SimpleStringProperty;
  * @version 0.0.0.20170429
  * @since 0.0
  */
-public class MusicLibrarySongRow
+public class MusicLibraryTrackRow
 {
 	/**
 	 * The title column value
 	 */
-	private SimpleStringProperty title_;
+	private StringProperty title_;
 
 	/**
 	 * The artist column value
 	 */
-	private SimpleStringProperty artist_;
+	private StringProperty artist_;
 
 	/**
 	 * The album column value
 	 */
-	private SimpleStringProperty album_;
+	private StringProperty album_;
 
 	/**
 	 * The genre colum value
 	 */
-	private SimpleStringProperty genre_;
+	private StringProperty genre_;
 
 	/**
 	 * The year column value
 	 */
-	private SimpleStringProperty year_;
+	private StringProperty year_;
 
 	/**
-	 * A row to be submitted to the music library table view, populated with the passed {@link MusicLibrarySong}
+	 * A row to be submitted to the music library table view, populated with the passed {@link MusicLibraryTrack}
+	 * <p>
+	 * Due to the asynchronous nature of {@link Media} and its hindrance to {@link Media.getMetadata()}, the properties
+	 * should be bound to observable values
 	 *
 	 * @version 0.0.0.20170429
 	 * @since 0.0
 	 *
-	 * @param song
-	 *            the song to populate this row with
+	 * @param track
+	 *            the track to populate this row with
 	 */
-	public MusicLibrarySongRow(MusicLibrarySong song)
+	public MusicLibraryTrackRow(MusicLibraryTrack track)
 	{
-		title_ = new SimpleStringProperty(song.getTitle());
-		artist_ = new SimpleStringProperty(song.getArtist());
-		album_ = new SimpleStringProperty(song.getAlbum());
-		genre_ = new SimpleStringProperty(song.getGenre());
-		year_ = new SimpleStringProperty(song.getYear());
+		title_ = new SimpleStringProperty();
+		title_.bind(track.titleProperty());
+
+		artist_ = new SimpleStringProperty();
+		artist_.bind(track.artistProperty());
+
+		album_ = new SimpleStringProperty();
+		album_.bind(track.albumProperty());
+
+		genre_ = new SimpleStringProperty();
+		genre_.bind(track.genreProperty());
+
+		year_ = new SimpleStringProperty();
+		year_.bind(track.yearProperty());
 	}
 
 	/**
@@ -61,7 +74,7 @@ public class MusicLibrarySongRow
 	 *
 	 * @return the name
 	 */
-	public SimpleStringProperty titleProperty()
+	public StringProperty titleProperty()
 	{
 		return title_;
 	}
@@ -74,7 +87,7 @@ public class MusicLibrarySongRow
 	 *
 	 * @return the artist
 	 */
-	public SimpleStringProperty artistProperty()
+	public StringProperty artistProperty()
 	{
 		return artist_;
 	}
@@ -87,7 +100,7 @@ public class MusicLibrarySongRow
 	 *
 	 * @return the album
 	 */
-	public SimpleStringProperty albumProperty()
+	public StringProperty albumProperty()
 	{
 		return album_;
 	}
@@ -100,7 +113,7 @@ public class MusicLibrarySongRow
 	 *
 	 * @return the genre
 	 */
-	public SimpleStringProperty genreProperty()
+	public StringProperty genreProperty()
 	{
 		return genre_;
 	}
@@ -113,7 +126,7 @@ public class MusicLibrarySongRow
 	 *
 	 * @return the year
 	 */
-	public SimpleStringProperty yearProperty()
+	public StringProperty yearProperty()
 	{
 		return year_;
 	}

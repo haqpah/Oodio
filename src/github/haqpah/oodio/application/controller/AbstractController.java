@@ -46,7 +46,7 @@ abstract class AbstractController implements FxmlController
 	 * @version 0.0.0.20170426
 	 * @since 0.0
 	 */
-	public AbstractController(final Stage primaryStage, final Logger systemLogger, String fxmlFilename)
+	public AbstractController(Stage primaryStage, Logger systemLogger, String fxmlFilename)
 	{
 		primaryStage_ = primaryStage;
 		systemLogger_ = systemLogger;

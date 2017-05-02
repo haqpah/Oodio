@@ -63,7 +63,7 @@ public class SystemPathService
 	}
 
 	/**
-	 * Gets the {@link Path} for the default song to be loaded into the system player. This mp3 is shipped with the installation
+	 * Gets the {@link Path} for the default track to be loaded into the system player. This mp3 is shipped with the installation
 	 *
 	 * @version 0.0.0.20170430
 	 * @since 0.0

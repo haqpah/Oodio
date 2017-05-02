@@ -6,46 +6,48 @@ import java.nio.file.Path;
 
 import org.apache.log4j.Logger;
 
+import javafx.beans.property.SimpleStringProperty;
+import javafx.beans.property.StringProperty;
 import javafx.collections.MapChangeListener;
 import javafx.scene.media.Media;
 
 /**
- * POJO containing values to be transformed into a {@link MusicLibraryRow}
+ * Contains values to be transformed into a {@link MusicLibraryRow}
  *
  * @version 0.0.0.20170430
  * @since 0.0
  */
-public class MusicLibrarySong
+public class MusicLibraryTrack
 {
 	/**
-	 * The file path for this song
+	 * The file path for this track
 	 */
 	private Path filePath_;
 
 	/**
-	 * The title of the song
+	 * The title of the track
 	 */
-	private String title_;
+	private StringProperty title_;
 
 	/**
-	 * The artist of the song
+	 * The artist of the track
 	 */
-	private String artist_;
+	private StringProperty artist_;
 
 	/**
-	 * The album the song is on
+	 * The album the track is on
 	 */
-	private String album_;
+	private StringProperty album_;
 
 	/**
-	 * The genre of the song
+	 * The genre of the track
 	 */
-	private String genre_;
+	private StringProperty genre_;
 
 	/**
-	 * The year the song was released
+	 * The year the track was released
 	 */
-	private String year_;
+	private StringProperty year_;
 
 	/**
 	 * POJO containing values to be transformed into a {@link MusicLibraryRow}
@@ -54,50 +56,52 @@ public class MusicLibrarySong
 	 * @since 0.0
 	 *
 	 * @param filePath
-	 *            the file path for the song to make this object from
+	 *            the file path for the track to make this object from
 	 *
 	 * @throws IllegalArgumentException
-	 *             if the passed filepah is not valid
+	 *             if the passed file path is not valid
 	 * @throws InterruptedException
 	 *             if the thread is interrupted while loading new media
-	 * @throws UnsupportedEncodingException
-	 *             if the filepath cannot be encoded using UTF-8
 	 */
-	public MusicLibrarySong(Path filePath, Logger systemLogger) throws IllegalArgumentException, InterruptedException, UnsupportedEncodingException
+	public MusicLibraryTrack(Path filePath, Logger systemLogger) throws IllegalArgumentException, InterruptedException
 	{
 		filePath_ = filePath;
+
+		artist_ = new SimpleStringProperty();
+		title_ = new SimpleStringProperty();
+		album_ = new SimpleStringProperty();
+		genre_ = new SimpleStringProperty();
+		year_ = new SimpleStringProperty();
 
 		String filePathString = filePath_.toUri().toString();
 		Media media = new Media(filePathString);
 
-		// TODO research asynch on #getMetadata
+		// XXX: workaround because getMetadata() is asynchronous and a little slow
 		media.getMetadata().addListener((MapChangeListener<? super String, ? super Object>) c -> {
 			if(c.wasAdded())
 			{
 				if("artist".equals(c.getKey()))
 				{
-					artist_ = c.getValueAdded().toString();
+					artist_.set(c.getValueAdded().toString());
 				}
 				else if("title".equals(c.getKey()))
 				{
-					title_ = c.getValueAdded().toString();
+					title_.set(c.getValueAdded().toString());
 				}
 				else if("album".equals(c.getKey()))
 				{
-					album_ = c.getValueAdded().toString();
+					album_.set(c.getValueAdded().toString());
 				}
 				else if("genre".equals(c.getKey()))
 				{
-					genre_ = c.getValueAdded().toString();
+					genre_.set(c.getValueAdded().toString());
 				}
 				else if("year".equals(c.getKey()))
 				{
-					year_ = c.getValueAdded().toString();
+					year_.set(c.getValueAdded().toString());
 				}
 			}
 		});
-
-		Thread.sleep(250); // TODO remove once asynch is figured out
 	}
 
 	/**
@@ -114,14 +118,13 @@ public class MusicLibrarySong
 	 * @throws UnsupportedEncodingException
 	 *             if the filepath cannot be encoded using UTF-8
 	 */
-	public MusicLibrarySong(File file, Logger systemLogger) throws InterruptedException, UnsupportedEncodingException
+	public MusicLibraryTrack(File file, Logger systemLogger) throws InterruptedException, UnsupportedEncodingException
 	{
-		// TODO validate string
 		this(file.toPath(), systemLogger);
 	}
 
 	/**
-	 * Accessor for the song's file path
+	 * Accessor for the track's file path
 	 *
 	 * @version 0.0.0.20170430
 	 * @since 0.0
@@ -141,7 +144,7 @@ public class MusicLibrarySong
 	 *
 	 * @return the title
 	 */
-	public String getTitle()
+	public StringProperty titleProperty()
 	{
 		return title_;
 	}
@@ -154,7 +157,7 @@ public class MusicLibrarySong
 	 *
 	 * @return the artist
 	 */
-	public String getArtist()
+	public StringProperty artistProperty()
 	{
 		return artist_;
 	}
@@ -167,7 +170,7 @@ public class MusicLibrarySong
 	 *
 	 * @return the album
 	 */
-	public String getAlbum()
+	public StringProperty albumProperty()
 	{
 		return album_;
 	}
@@ -180,7 +183,7 @@ public class MusicLibrarySong
 	 *
 	 * @return the genre
 	 */
-	public String getGenre()
+	public StringProperty genreProperty()
 	{
 		return genre_;
 	}
@@ -193,7 +196,7 @@ public class MusicLibrarySong
 	 *
 	 * @return the year
 	 */
-	public String getYear()
+	public StringProperty yearProperty()
 	{
 		return year_;
 	}
@@ -208,7 +211,7 @@ public class MusicLibrarySong
 		StringBuilder sb = new StringBuilder();
 
 		// No carriage returns
-		sb.append("song[")
+		sb.append("track[")
 				.append(title_)
 				.append(", ")
 				.append(artist_)
