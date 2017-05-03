@@ -104,7 +104,7 @@ public class Oodio extends Application
 	public void stop() throws Exception
 	{
 		systemLogger_.info("Exiting application via X button");
-		systemLogger_.shutdown(); // TODO
+		systemLogger_.shutdown(); // TODO Research logger shutdown
 
 		super.stop();
 		System.exit(0);

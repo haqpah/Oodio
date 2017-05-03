@@ -22,7 +22,7 @@ import javafx.scene.media.Media;
  * traversing through the user's music library directory. This object should be used on
  * start-up.
  *
- * TODO Look into leveraging this object for playlists
+ * TODO look into leveraging this object for playlists
  *
  * @version 0.0.1.20170501
  * @since 0.0
