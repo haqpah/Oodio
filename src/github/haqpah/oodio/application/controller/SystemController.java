@@ -161,7 +161,7 @@ public class SystemController extends AbstractController implements FxmlControll
 
 		try
 		{
-			// TODO figure out how to get rid of this
+			// TODO Figure out how to get rid of this
 			Thread.sleep(100); // Sleeping an extra 100ms to let metadata populate
 		}
 		catch (InterruptedException e)
@@ -226,7 +226,7 @@ public class SystemController extends AbstractController implements FxmlControll
 					musicLibrary_.getLibrary().add(track);
 				}
 
-				// TODO Add it to the music library directory
+				// TODO Add track to the music library directory
 				getSystemLogger().debug("TODO Track added to music library directory in file system: " + track.toString());
 
 				// Add it to the table view once its been added to more important systems
@@ -253,7 +253,7 @@ public class SystemController extends AbstractController implements FxmlControll
 	{
 		getSystemLogger().info("Exiting application via system menu");
 
-		getSystemLogger().shutdown(); // TODO
+		getSystemLogger().shutdown(); // TODO Research logger shutdown
 		System.exit(0);
 	}
 

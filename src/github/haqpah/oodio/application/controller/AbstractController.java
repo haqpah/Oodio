@@ -34,7 +34,7 @@ abstract class AbstractController implements FxmlController
 	/**
 	 * The stage this controller's parent pane is attached to
 	 */
-	private Stage primaryStage_; // TODO do better
+	private Stage primaryStage_; // TODO Figure out better way to access primary stage within controller
 
 	/**
 	 * The root {@link Node} that this controller's UI elements are contained in, defined by the FXML
