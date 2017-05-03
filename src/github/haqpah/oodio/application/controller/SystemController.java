@@ -5,6 +5,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.log4j.Logger;
@@ -13,18 +14,24 @@ import github.haqpah.oodio.musiclibrary.MusicLibrary;
 import github.haqpah.oodio.musiclibrary.MusicLibraryTrack;
 import github.haqpah.oodio.musiclibrary.MusicLibraryTrackRow;
 import github.haqpah.oodio.services.SystemPathService;
+import javafx.beans.value.ObservableValue;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
-import javafx.scene.Node;
+import javafx.scene.control.Button;
+import javafx.scene.control.MenuBar;
+import javafx.scene.control.TableColumn;
+import javafx.scene.control.TableColumn.CellDataFeatures;
 import javafx.scene.control.TableView;
 import javafx.scene.layout.AnchorPane;
+import javafx.scene.layout.Pane;
 import javafx.scene.media.Media;
 import javafx.scene.media.MediaPlayer;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
+import javafx.util.Callback;
 
 /**
- * TODO
+ * A concrete implementation of the abstract controller for the system. Contains all UI elements
  *
  * @version 0.0.0.20170430
  * @since 0.0
@@ -37,30 +44,108 @@ public class SystemController extends AbstractController implements FxmlControll
 	private final static String FXML_FILENAME_ = "System.fxml";
 
 	/**
+	 * The {@link MusicLibrary} containing metadata on the files in the user's system
+	 */
+	private MusicLibrary musicLibrary_;
+
+	/**
 	 * The {@link MediaPlayer} that this controller can control
 	 */
 	private MediaPlayer systemPlayer_;
 
 	/**
-	 * TODO
+	 * The {@link Pane} that is the parent of all UI elements
+	 * <p>
+	 * This is equivalent to {@link AbstractController.#getRootNode()} but
+	 * allows for direct access and FXML compatibility!
 	 */
-	private TableView<MusicLibraryTrackRow> musicLibraryTableView_;
+	@FXML
+	private AnchorPane systemAnchorPane_;
 
 	/**
-	 * TODO
+	 * The {@link MenuBar} with user actions for operating on the system
 	 */
-	private MusicLibrary musicLibrary_;
+	@FXML
+	private MenuBar systemMenuBar_;
 
 	/**
-	 * TODO
+	 * The {@link TableView} that shows the users music files
+	 */
+	@FXML
+	private TableView<MusicLibraryTrackRow> musicLibraryTable_;
+
+	/**
+	 * The {@link TableColumn} the shows the title of a track
+	 */
+	@FXML
+	private TableColumn<MusicLibraryTrackRow, String> colTitle_;
+
+	/**
+	 * The {@link TableColumn} the shows the artist of a track
+	 */
+	@FXML
+	private TableColumn<MusicLibraryTrackRow, String> colArtist_;
+
+	/**
+	 * The {@link TableColumn} the shows the album of a track
+	 */
+	@FXML
+	private TableColumn<MusicLibraryTrackRow, String> colAlbum_;
+
+	/**
+	 * The {@link TableColumn} the shows the genre of a track
+	 */
+	@FXML
+	private TableColumn<MusicLibraryTrackRow, String> colGenre_;
+
+	/**
+	 * The {@link TableColumn} the shows the year of a track
+	 */
+	@FXML
+	private TableColumn<MusicLibraryTrackRow, String> colYear_;
+
+	/**
+	 * The {@link Button} responsible for loading the previous track in the queue
+	 */
+	@FXML
+	private Button btnPrevious_;
+
+	/**
+	 * The {@link Button} responsible for loading the next track in the queue
+	 */
+	@FXML
+	private Button btnNext_;
+
+	/**
+	 * The {@link Button} responsible for loading the playing the currently loaded track
+	 */
+	@FXML
+	private Button btnPlay_;
+
+	/**
+	 * The {@link Button} responsible for loading the pausing the currently loaded track
+	 */
+	@FXML
+	private Button btnPause_;
+
+	/**
+	 * The {@link Button} responsible for loading the stoppings the currently loaded track
+	 */
+	@FXML
+	private Button btnStop_;
+
+	/**
 	 * Constructor
 	 *
 	 * @version 0.0.0.20170430
 	 * @since 0.0
 	 *
 	 * @param primaryStage
+	 *            The stage this controller's parent pane is attached to
 	 * @param systemLogger
+	 *            Responsible for logging information to the console and log file
 	 * @param musicLibrary
+	 *            The {@link MusicLibrary} containing metadata on the files in the user's system
 	 */
 	public SystemController(Stage primaryStage, Logger systemLogger, MusicLibrary musicLibrary)
 	{
@@ -68,54 +153,27 @@ public class SystemController extends AbstractController implements FxmlControll
 
 		musicLibrary_ = musicLibrary;
 
-		// Load default track
-		if(!musicLibrary.isEmpty())
-		{
-			MusicLibraryTrack defaultSong = musicLibrary.getFirst();
-			Media defaultMedia = new Media(defaultSong.getFilePath().toUri().toString());
-			systemPlayer_ = new MediaPlayer(defaultMedia);
-		}
-		else
-		{
-			Media helloWorldMedia = new Media(SystemPathService.getHelloWorldMediaPath().toString());
-			systemPlayer_ = new MediaPlayer(helloWorldMedia);
-		}
+		// Setup cell value factories with observable values
+		setupCellValueFactories();
 
-		// Get the system music library table view object
-		AnchorPane rootNode = (AnchorPane) getRootNode();
-		List<Node> children = rootNode.getChildren();
-		for(Node child : children)
+		// Get all the rows to add to the table
+		List<MusicLibraryTrackRow> rowList = createMusicLibraryTrackRows();
+
+		try
 		{
-			if(child instanceof TableView)
-			{
-				musicLibraryTableView_ = (TableView<MusicLibraryTrackRow>) child;
-			}
+			// TODO figure out how to get rid of this
+			Thread.sleep(100); // Sleeping an extra 100ms to let metadata populate
+		}
+		catch (InterruptedException e)
+		{
+			systemLogger.error("Thread woke up unexpectedly, some rows may be missing metadata.");
 		}
 
-		// Add songs to the in-memory music library
-		addSongsToTableView(musicLibrary_.getLibrary());
-	}
+		musicLibraryTable_.getItems().addAll(rowList);
+		musicLibraryTable_.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
 
-	/**
-	 * Adds a group of {@link MusicLibraryTrack} to the table view.
-	 * <p>
-	 * Does <strong>not</strong> add the file to the music library directory
-	 *
-	 * @version 0.0.0.20170430
-	 * @since 0.0
-	 *
-	 * @param songsToAdd
-	 *            the songs to add to the table view
-	 */
-	private void addSongsToTableView(List<MusicLibraryTrack> songsToAdd)
-	{
-		for(MusicLibraryTrack track : songsToAdd)
-		{
-			getSystemLogger().debug("Building new row from track: " + track.toString());
-			MusicLibraryTrackRow row = new MusicLibraryTrackRow(track);
+		loadDefaultTrack();
 
-			musicLibraryTableView_.getItems().add(row);
-		}
 	}
 
 	/*************************************************
@@ -123,6 +181,16 @@ public class SystemController extends AbstractController implements FxmlControll
 	 * SYSTEM MENU ACTIONS
 	 *
 	 *************************************************/
+
+	/**
+	 * Creates a new playlist in the system
+	 *
+	 * @version 0.0.0.20170503
+	 * @since 0.0
+	 *
+	 * @param event
+	 *            the {@link ActionEvent} that triggered this method
+	 */
 	@FXML
 	public void newPlaylist(ActionEvent event)
 	{
@@ -163,7 +231,7 @@ public class SystemController extends AbstractController implements FxmlControll
 
 				// Add it to the table view once its been added to more important systems
 				MusicLibraryTrackRow row = new MusicLibraryTrackRow(track);
-				musicLibraryTableView_.getItems().add(row);
+				musicLibraryTable_.getItems().add(row);
 			}
 			catch (Exception e)
 			{
@@ -237,11 +305,11 @@ public class SystemController extends AbstractController implements FxmlControll
 		}
 	}
 
-	/**
+	/*************************************************
 	 *
 	 * SYSTEM PLAYER ACTIONS
 	 *
-	 */
+	 *************************************************/
 
 	/**
 	 * Plays the loaded track
@@ -290,4 +358,140 @@ public class SystemController extends AbstractController implements FxmlControll
 		return FXML_FILENAME_;
 	}
 
+	/**
+	 * Creates a list of populated rows that track metadata can be displayed on the {@link #musicLibraryTable_}
+	 *
+	 * @version 0.0.0.20170503
+	 * @since 0.0
+	 *
+	 * @return the list of rows that was created
+	 */
+	private List<MusicLibraryTrackRow> createMusicLibraryTrackRows()
+	{
+		List<MusicLibraryTrackRow> list = new ArrayList<MusicLibraryTrackRow>();
+
+		musicLibrary_.getLibrary().forEach(track -> {
+			MusicLibraryTrackRow row = new MusicLibraryTrackRow(track);
+			list.add(row);
+		});
+
+		getSystemLogger().debug("Created " + list.size() + " rows for library table view");
+
+		return list;
+	}
+
+	/**
+	 * Loads the hello world media into the system player. This likely only plays the
+	 * first time the user ever launches the application. Any song in the music library
+	 * will take precedence.
+	 *
+	 * @version 0.0.0.20170503
+	 * @since 0.0
+	 */
+	private void loadDefaultTrack()
+	{
+		String defaultMedia;
+		if(!musicLibrary_.isEmpty())
+		{
+			MusicLibraryTrack defaultSong = musicLibrary_.getFirst();
+			defaultMedia = defaultSong.getFilePath().toUri().toString();
+		}
+		else
+		{
+			defaultMedia = SystemPathService.getHelloWorldMediaPath().toString();
+		}
+
+		Media media = new Media(defaultMedia);
+		systemPlayer_ = new MediaPlayer(media);
+
+		getSystemLogger().debug("Loaded default track: " + defaultMedia);
+	}
+
+	/**
+	 * Sets up the cell value factories with observable string
+	 * properties in the {@link MusicLibraryTrackRow} object
+	 *
+	 * @version 0.0.0.20170503
+	 * @since 0.0
+	 */
+	private void setupCellValueFactories()
+	{
+		getSystemLogger().debug("Setting up cell value factories");
+
+		// Title column
+		colTitle_.setCellValueFactory(
+				new Callback<CellDataFeatures<MusicLibraryTrackRow, String>, ObservableValue<String>>()
+				{
+					@Override
+					public ObservableValue<String> call(CellDataFeatures<MusicLibraryTrackRow, String> row)
+					{
+						return row.getValue().titleProperty();
+					}
+				});
+
+		// Artist column
+		colArtist_.setCellValueFactory(
+				new Callback<CellDataFeatures<MusicLibraryTrackRow, String>, ObservableValue<String>>()
+				{
+					@Override
+					public ObservableValue<String> call(CellDataFeatures<MusicLibraryTrackRow, String> row)
+					{
+						return row.getValue().artistProperty();
+					}
+				});
+
+		// Album column
+		colAlbum_.setCellValueFactory(
+				new Callback<CellDataFeatures<MusicLibraryTrackRow, String>, ObservableValue<String>>()
+				{
+					@Override
+					public ObservableValue<String> call(CellDataFeatures<MusicLibraryTrackRow, String> row)
+					{
+						return row.getValue().albumProperty();
+					}
+				});
+
+		// Genre column
+		colGenre_.setCellValueFactory(
+				new Callback<CellDataFeatures<MusicLibraryTrackRow, String>, ObservableValue<String>>()
+				{
+					@Override
+					public ObservableValue<String> call(CellDataFeatures<MusicLibraryTrackRow, String> row)
+					{
+						return row.getValue().genreProperty();
+					}
+				});
+
+		// Year column
+		colYear_.setCellValueFactory(
+				new Callback<CellDataFeatures<MusicLibraryTrackRow, String>, ObservableValue<String>>()
+				{
+					@Override
+					public ObservableValue<String> call(CellDataFeatures<MusicLibraryTrackRow, String> row)
+					{
+						return row.getValue().yearProperty();
+					}
+				});
+	}
+
+	/**
+	 * Convenience method to get all the columns of the {@link #musicLibraryTable_} in a {@link List}
+	 *
+	 * @version 0.0.0.20170503
+	 * @since 0.0
+	 *
+	 * @return the list
+	 */
+	private List<TableColumn<MusicLibraryTrackRow, String>> getColumnsAsList()
+	{
+		List<TableColumn<MusicLibraryTrackRow, String>> columnList = new ArrayList<TableColumn<MusicLibraryTrackRow, String>>();
+
+		columnList.add(colTitle_);
+		columnList.add(colArtist_);
+		columnList.add(colAlbum_);
+		columnList.add(colGenre_);
+		columnList.add(colYear_);
+
+		return columnList;
+	}
 }

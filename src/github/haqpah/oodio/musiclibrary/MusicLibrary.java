@@ -115,6 +115,7 @@ public class MusicLibrary
 
 		discoverOrCreateMusicLibraryDirectory(systemLogger);
 
+		systemLogger.debug("Traversing music library directory");
 		DirectoryStream<Path> musicLibrary = Files.newDirectoryStream(musicLibraryDirectory);
 		for(Path artistPath : musicLibrary)
 		{
@@ -129,6 +130,8 @@ public class MusicLibrary
 				}
 			}
 		}
+
+		systemLogger.debug("Music library loaded with " + musicLibrary_.size() + " tracks");
 	}
 
 	/**
@@ -181,7 +184,7 @@ public class MusicLibrary
 	/**
 	 * Discovers an existing music library directory. If one is not found, creates it.
 	 *
-	 * @version 0.0.0.20170501
+	 * @version 0.0.1.20170503
 	 * @since 0.0
 	 */
 	private void discoverOrCreateMusicLibraryDirectory(Logger systemLogger)
@@ -199,6 +202,7 @@ public class MusicLibrary
 			{
 				// Create the library
 				Files.createDirectory(library);
+				systemLogger.info("Created new music library at " + library.toString());
 			}
 			catch (IOException e)
 			{

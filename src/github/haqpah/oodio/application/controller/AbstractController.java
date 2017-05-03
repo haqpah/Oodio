@@ -9,6 +9,7 @@ import org.apache.log4j.Logger;
 import github.haqpah.oodio.services.SystemPathService;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Node;
+import javafx.scene.layout.Pane;
 import javafx.stage.Stage;
 
 /**
@@ -31,20 +32,27 @@ abstract class AbstractController implements FxmlController
 	private Logger systemLogger_;
 
 	/**
-	 * The stage this controllers parent is attached to
+	 * The stage this controller's parent pane is attached to
 	 */
-	// TODO do better
-	private Stage primaryStage_;
+	private Stage primaryStage_; // TODO do better
+
 	/**
 	 * The root {@link Node} that this controller's UI elements are contained in, defined by the FXML
 	 */
-	private Node rootNode_;
+	private Pane rootPane_;
 
 	/**
 	 * Abstract implementation of a controller for FXML files
 	 *
 	 * @version 0.0.0.20170426
 	 * @since 0.0
+	 *
+	 * @param primaryStage
+	 *            The stage this controller's parent pane is attached to
+	 * @param systemLogger
+	 *            Responsible for logging information to the console and log file
+	 * @param fxmlFilename
+	 *            The FXML file name for this controller
 	 */
 	public AbstractController(Stage primaryStage, Logger systemLogger, String fxmlFilename)
 	{
@@ -58,7 +66,7 @@ abstract class AbstractController implements FxmlController
 
 			Path fxmlPath = SystemPathService.getFxmlDirectory().resolve(fxmlFilename);
 			FileInputStream stream = new FileInputStream(fxmlPath.toString());
-			rootNode_ = getFxmlLoader().load(stream);
+			rootPane_ = getFxmlLoader().load(stream);
 
 			// ((Region) rootNode_).prefWidthProperty().bind(primaryStage.widthProperty());
 		}
@@ -134,8 +142,8 @@ abstract class AbstractController implements FxmlController
 	 * @since 0.0
 	 */
 	@Override
-	public Node getRootNode()
+	public Pane getRootNode()
 	{
-		return rootNode_;
+		return rootPane_;
 	}
 }
