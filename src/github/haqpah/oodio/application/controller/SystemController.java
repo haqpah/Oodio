@@ -14,11 +14,14 @@ import github.haqpah.oodio.musiclibrary.MusicLibrary;
 import github.haqpah.oodio.musiclibrary.MusicLibraryTrack;
 import github.haqpah.oodio.musiclibrary.MusicLibraryTrackRow;
 import github.haqpah.oodio.services.SystemPathService;
+import javafx.beans.InvalidationListener;
+import javafx.beans.Observable;
 import javafx.beans.value.ObservableValue;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.MenuBar;
+import javafx.scene.control.Slider;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableColumn.CellDataFeatures;
 import javafx.scene.control.TableView;
@@ -26,6 +29,7 @@ import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.Pane;
 import javafx.scene.media.Media;
 import javafx.scene.media.MediaPlayer;
+import javafx.scene.media.MediaView;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import javafx.util.Callback;
@@ -69,6 +73,48 @@ public class SystemController extends AbstractController implements FxmlControll
 	private MenuBar systemMenuBar_;
 
 	/**
+	 * The {@link MediaView} that shows the currently loaded track
+	 */
+	@FXML
+	private MediaView mediaView_;
+
+	/**
+	 * The {@link Button} responsible for loading the previous track in the queue
+	 */
+	@FXML
+	private Button btnPrevious_;
+
+	/**
+	 * The {@link Button} responsible for loading the next track in the queue
+	 */
+	@FXML
+	private Button btnNext_;
+
+	/**
+	 * The {@link Button} responsible for loading the playing the currently loaded track
+	 */
+	@FXML
+	private Button btnPlay_;
+
+	/**
+	 * The {@link Button} responsible for loading the pausing the currently loaded track
+	 */
+	@FXML
+	private Button btnPause_;
+
+	/**
+	 * The {@link Button} responsible for loading the stopping the currently loaded track
+	 */
+	@FXML
+	private Button btnStop_;
+
+	/**
+	 * The {@link Slider} responsible for changing the volume of the currently loaded track
+	 */
+	@FXML
+	private Slider volumeSlider_;
+
+	/**
 	 * The {@link TableView} that shows the users music files
 	 */
 	@FXML
@@ -103,36 +149,6 @@ public class SystemController extends AbstractController implements FxmlControll
 	 */
 	@FXML
 	private TableColumn<MusicLibraryTrackRow, String> colYear_;
-
-	/**
-	 * The {@link Button} responsible for loading the previous track in the queue
-	 */
-	@FXML
-	private Button btnPrevious_;
-
-	/**
-	 * The {@link Button} responsible for loading the next track in the queue
-	 */
-	@FXML
-	private Button btnNext_;
-
-	/**
-	 * The {@link Button} responsible for loading the playing the currently loaded track
-	 */
-	@FXML
-	private Button btnPlay_;
-
-	/**
-	 * The {@link Button} responsible for loading the pausing the currently loaded track
-	 */
-	@FXML
-	private Button btnPause_;
-
-	/**
-	 * The {@link Button} responsible for loading the stoppings the currently loaded track
-	 */
-	@FXML
-	private Button btnStop_;
 
 	/**
 	 * Constructor
@@ -174,6 +190,19 @@ public class SystemController extends AbstractController implements FxmlControll
 
 		loadDefaultTrack();
 
+		volumeSlider_.setValue(systemPlayer_.getVolume() * 400); // XXX: 400 comes from the FXML "max" property
+		volumeSlider_.valueProperty().addListener(new InvalidationListener()
+		{
+			/**
+			 * @version 0.0.0.20170503
+			 * @since 0.0
+			 */
+			@Override
+			public void invalidated(Observable observable)
+			{
+				systemPlayer_.setVolume(volumeSlider_.getValue() / 400); // XXX: 400 comes from the FXML "max" property
+			}
+		});
 	}
 
 	/*************************************************
@@ -403,6 +432,7 @@ public class SystemController extends AbstractController implements FxmlControll
 
 		Media media = new Media(defaultMedia);
 		systemPlayer_ = new MediaPlayer(media);
+		mediaView_ = new MediaView(systemPlayer_);
 
 		getSystemLogger().debug("Loaded default track: " + defaultMedia);
 	}
