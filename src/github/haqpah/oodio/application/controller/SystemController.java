@@ -24,6 +24,7 @@ import javafx.scene.control.MenuBar;
 import javafx.scene.control.Slider;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableColumn.CellDataFeatures;
+import javafx.scene.control.TableRow;
 import javafx.scene.control.TableView;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.Pane;
@@ -170,7 +171,7 @@ public class SystemController extends AbstractController implements FxmlControll
 		musicLibrary_ = musicLibrary;
 
 		// Setup cell value factories with observable values
-		setupCellValueFactories();
+		setupTableFactories();
 
 		// Get all the rows to add to the table
 		List<MusicLibraryTrackRow> rowList = createMusicLibraryTrackRows();
@@ -190,7 +191,7 @@ public class SystemController extends AbstractController implements FxmlControll
 
 		loadDefaultTrack();
 
-		volumeSlider_.setValue(systemPlayer_.getVolume() * 400); // XXX: 400 comes from the FXML "max" property
+		volumeSlider_.setValue(systemPlayer_.getVolume() * 100); // XXX: 400 comes from the FXML "max" property
 		volumeSlider_.valueProperty().addListener(new InvalidationListener()
 		{
 			/**
@@ -200,7 +201,10 @@ public class SystemController extends AbstractController implements FxmlControll
 			@Override
 			public void invalidated(Observable observable)
 			{
-				systemPlayer_.setVolume(volumeSlider_.getValue() / 400); // XXX: 400 comes from the FXML "max" property
+				if(volumeSlider_.isValueChanging())
+				{
+					systemPlayer_.setVolume(volumeSlider_.getValue() / 100.0);
+				}
 			}
 		});
 	}
@@ -221,7 +225,7 @@ public class SystemController extends AbstractController implements FxmlControll
 	 *            the {@link ActionEvent} that triggered this method
 	 */
 	@FXML
-	public void newPlaylist(ActionEvent event)
+	protected void newPlaylist(ActionEvent event)
 	{
 		throw new UnsupportedOperationException("Oodio does not yet support playlists");
 	}
@@ -238,7 +242,7 @@ public class SystemController extends AbstractController implements FxmlControll
 	 *             if the track could not be added to the library
 	 */
 	@FXML
-	public void addTrackToLibrary(ActionEvent event) throws Exception
+	protected void addTrackToLibrary(ActionEvent event) throws Exception
 	{
 		FileChooser fileChooser = new FileChooser();
 		File file = fileChooser.showOpenDialog(getPrimaryStage());
@@ -278,7 +282,7 @@ public class SystemController extends AbstractController implements FxmlControll
 	 * @param event
 	 */
 	@FXML
-	public void exitApplication(ActionEvent event)
+	protected void exitApplication(ActionEvent event)
 	{
 		getSystemLogger().info("Exiting application via system menu");
 
@@ -295,7 +299,7 @@ public class SystemController extends AbstractController implements FxmlControll
 	 * @param event
 	 */
 	@FXML
-	public void about(ActionEvent event)
+	protected void about(ActionEvent event)
 	{
 		if(Desktop.isDesktopSupported())
 		{
@@ -319,7 +323,7 @@ public class SystemController extends AbstractController implements FxmlControll
 	 * @param event
 	 */
 	@FXML
-	public void wiki(ActionEvent event)
+	protected void wiki(ActionEvent event)
 	{
 		if(Desktop.isDesktopSupported())
 		{
@@ -444,8 +448,20 @@ public class SystemController extends AbstractController implements FxmlControll
 	 * @version 0.0.0.20170503
 	 * @since 0.0
 	 */
-	private void setupCellValueFactories()
+	private void setupTableFactories()
 	{
+		musicLibraryTable_.setRowFactory(tv -> {
+			TableRow<MusicLibraryTrackRow> row = new TableRow<>();
+			row.setOnMouseClicked(event -> {
+				if(event.getClickCount() == 2 && (!row.isEmpty()))
+				{
+					MusicLibraryTrackRow rowData = row.getItem();
+
+				}
+			});
+			return row;
+		});
+
 		getSystemLogger().debug("Setting up cell value factories");
 
 		// Title column
