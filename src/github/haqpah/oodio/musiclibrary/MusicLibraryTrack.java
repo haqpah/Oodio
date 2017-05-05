@@ -103,6 +103,16 @@ public class MusicLibraryTrack
 				}
 			}
 		});
+
+		try
+		{
+			// TODO Figure out how to get rid of this
+			Thread.sleep(200); // Sleeping an extra 100ms to let metadata populate
+		}
+		catch (InterruptedException e)
+		{
+			systemLogger.error("Thread woke up unexpectedly, some rows may be missing metadata.");
+		}
 	}
 
 	/**

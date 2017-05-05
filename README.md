@@ -9,6 +9,9 @@ An open-source desktop audio player capable of library and playlist management.
 - CURRENTLY IN A PRE-ALPHA STAGE
 ```
 
+## SCREENSHOT
+![Oodio pre-alpha](https://raw.githubusercontent.com/haqpah/oodio/master/res/app_screenshot.png)
+
 ## PULL REQUESTS
 This is an open-source project. Pull requests will be reviewed as soon as 
 possible and are extremely appreciated. However, this is not my day job. 

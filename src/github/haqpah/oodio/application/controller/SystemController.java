@@ -202,16 +202,6 @@ public class SystemController extends AbstractController implements FxmlControll
 		// Get all the rows to add to the table
 		List<MusicLibraryTrackRow> rowList = createMusicLibraryTrackRows();
 
-		try
-		{
-			// TODO Figure out how to get rid of this
-			Thread.sleep(500); // Sleeping an extra 100ms to let metadata populate
-		}
-		catch (InterruptedException e)
-		{
-			systemLogger.error("Thread woke up unexpectedly, some rows may be missing metadata.");
-		}
-
 		// Add the rows to the table
 		musicLibraryTable_.getItems().addAll(rowList);
 		musicLibraryTable_.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
