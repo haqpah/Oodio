@@ -7,6 +7,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import org.apache.log4j.Logger;
 
@@ -20,6 +21,7 @@ import javafx.beans.value.ObservableValue;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
+import javafx.scene.control.Label;
 import javafx.scene.control.MenuBar;
 import javafx.scene.control.Slider;
 import javafx.scene.control.TableColumn;
@@ -28,9 +30,9 @@ import javafx.scene.control.TableRow;
 import javafx.scene.control.TableView;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.Pane;
+import javafx.scene.layout.VBox;
 import javafx.scene.media.Media;
 import javafx.scene.media.MediaPlayer;
-import javafx.scene.media.MediaView;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import javafx.util.Callback;
@@ -54,11 +56,6 @@ public class SystemController extends AbstractController implements FxmlControll
 	private MusicLibrary musicLibrary_;
 
 	/**
-	 * The {@link MediaPlayer} that this controller can control
-	 */
-	private MediaPlayer systemPlayer_;
-
-	/**
 	 * The {@link Pane} that is the parent of all UI elements
 	 * <p>
 	 * This is equivalent to {@link AbstractController.#getRootNode()} but
@@ -74,10 +71,39 @@ public class SystemController extends AbstractController implements FxmlControll
 	private MenuBar systemMenuBar_;
 
 	/**
-	 * The {@link MediaView} that shows the currently loaded track
+	 * The {@link MediaPlayer} that this controller can control
+	 */
+	private MediaPlayer systemPlayer_;
+
+	/**
+	 * The current track loaded into the {@link #systemPlayer_}. This is not a playable
+	 * media file! This is a metadata object
+	 */
+	private Optional<MusicLibraryTrack> currentTrack_;
+
+	/**
+	 * The pane where metadata about the {@link #currentTrack_} is displayed
 	 */
 	@FXML
-	private MediaView mediaView_;
+	private VBox currentTrackDisplayPane_;
+
+	/**
+	 * The label displaying the {@link #currentTrack_}'s title
+	 */
+	@FXML
+	private Label currentTrackTitleDisplay_;
+
+	/**
+	 * The label displaying the {@link #currentTrack_}'s artist
+	 */
+	@FXML
+	private Label currentTrackArtistDisplay_;
+
+	/**
+	 * The label displaying the {@link #currentTrack_}'s album
+	 */
+	@FXML
+	private Label currentTrackAlbumDisplay_;
 
 	/**
 	 * The {@link Button} responsible for loading the previous track in the queue
@@ -179,19 +205,23 @@ public class SystemController extends AbstractController implements FxmlControll
 		try
 		{
 			// TODO Figure out how to get rid of this
-			Thread.sleep(100); // Sleeping an extra 100ms to let metadata populate
+			Thread.sleep(500); // Sleeping an extra 100ms to let metadata populate
 		}
 		catch (InterruptedException e)
 		{
 			systemLogger.error("Thread woke up unexpectedly, some rows may be missing metadata.");
 		}
 
+		// Add the rows to the table
 		musicLibraryTable_.getItems().addAll(rowList);
 		musicLibraryTable_.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
 
-		loadDefaultTrack();
+		currentTrack_ = loadDefaultTrack();
 
-		volumeSlider_.setValue(systemPlayer_.getVolume() * 100); // XXX: 400 comes from the FXML "max" property
+		refreshCurrentTrackDisplay();
+
+		// Setup volume slider
+		volumeSlider_.setValue(systemPlayer_.getVolume() * 100);
 		volumeSlider_.valueProperty().addListener(new InvalidationListener()
 		{
 			/**
@@ -421,24 +451,27 @@ public class SystemController extends AbstractController implements FxmlControll
 	 * @version 0.0.0.20170503
 	 * @since 0.0
 	 */
-	private void loadDefaultTrack()
+	private Optional<MusicLibraryTrack> loadDefaultTrack()
 	{
 		String defaultMedia;
+		MusicLibraryTrack defaultSong;
 		if(!musicLibrary_.isEmpty())
 		{
-			MusicLibraryTrack defaultSong = musicLibrary_.getFirst();
+			defaultSong = musicLibrary_.getFirst();
 			defaultMedia = defaultSong.getFilePath().toUri().toString();
 		}
 		else
 		{
+			defaultSong = null; // TODO Construct MusicLibraryTrack object from hello world media
 			defaultMedia = SystemPathService.getHelloWorldMediaPath().toString();
 		}
 
 		Media media = new Media(defaultMedia);
 		systemPlayer_ = new MediaPlayer(media);
-		mediaView_ = new MediaView(systemPlayer_);
 
 		getSystemLogger().debug("Loaded default track: " + defaultMedia);
+
+		return Optional.ofNullable(defaultSong);
 	}
 
 	/**
@@ -450,15 +483,28 @@ public class SystemController extends AbstractController implements FxmlControll
 	 */
 	private void setupTableFactories()
 	{
-		musicLibraryTable_.setRowFactory(tv -> {
-			TableRow<MusicLibraryTrackRow> row = new TableRow<>();
-			row.setOnMouseClicked(event -> {
-				if(event.getClickCount() == 2 && (!row.isEmpty()))
-				{
-					MusicLibraryTrackRow rowData = row.getItem();
+		getSystemLogger().debug("Setting up row factory");
 
+		musicLibraryTable_.setRowFactory(tableView -> {
+			TableRow<MusicLibraryTrackRow> row = new TableRow<>();
+
+			row.setOnMouseClicked(event -> {
+				if(event.getClickCount() == 2 && (!row.isEmpty())) // Double-click event
+				{
+					MusicLibraryTrackRow selectedRow = row.getItem();
+					Media media = new Media(selectedRow.getTrack().getFilePath().toUri().toString());
+
+					systemPlayer_.stop();
+					systemPlayer_ = new MediaPlayer(media);
+
+					currentTrack_ = Optional.of(selectedRow.getTrack());
+
+					refreshCurrentTrackDisplay();
+
+					systemPlayer_.play();
 				}
 			});
+
 			return row;
 		});
 
@@ -518,6 +564,51 @@ public class SystemController extends AbstractController implements FxmlControll
 						return row.getValue().yearProperty();
 					}
 				});
+	}
+
+	/**
+	 * Refreshes the current track display with updated information
+	 *
+	 * @version 0.0.0.20170504
+	 * @since 0.0
+	 */
+	private void refreshCurrentTrackDisplay()
+	{
+		currentTrackDisplayPane_.getChildren().remove(currentTrackTitleDisplay_);
+		currentTrackDisplayPane_.getChildren().remove(currentTrackArtistDisplay_);
+		currentTrackDisplayPane_.getChildren().remove(currentTrackAlbumDisplay_);
+
+		String title = currentTrack_.get().titleProperty().getValue();
+		if(title != null)
+		{
+			currentTrackTitleDisplay_ = new Label(title);
+		}
+		else
+		{
+			currentTrackTitleDisplay_ = new Label("Unknown title");
+		}
+
+		String artist = currentTrack_.get().artistProperty().getValue();
+		if(artist != null)
+		{
+			currentTrackArtistDisplay_ = new Label(artist);
+		}
+		else
+		{
+			currentTrackArtistDisplay_ = new Label("Unknown artist");
+		}
+
+		String album = currentTrack_.get().albumProperty().getValue();
+		if(album != null)
+		{
+			currentTrackAlbumDisplay_ = new Label(album);
+		}
+		else
+		{
+			currentTrackAlbumDisplay_ = new Label("Unknown Album");
+		}
+
+		currentTrackDisplayPane_.getChildren().addAll(currentTrackTitleDisplay_, currentTrackArtistDisplay_, currentTrackAlbumDisplay_);
 	}
 
 	/**

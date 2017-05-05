@@ -12,6 +12,11 @@ import javafx.beans.property.StringProperty;
 public class MusicLibraryTrackRow
 {
 	/**
+	 * The track that this row is built from
+	 */
+	private MusicLibraryTrack track_;
+
+	/**
 	 * The title column value
 	 */
 	private StringProperty title_;
@@ -50,6 +55,8 @@ public class MusicLibraryTrackRow
 	 */
 	public MusicLibraryTrackRow(MusicLibraryTrack track)
 	{
+		track_ = track;
+
 		title_ = new SimpleStringProperty();
 		title_.bind(track.titleProperty());
 
@@ -64,6 +71,19 @@ public class MusicLibraryTrackRow
 
 		year_ = new SimpleStringProperty();
 		year_.bind(track.yearProperty());
+	}
+
+	/**
+	 * Accessor for the track this row is built from
+	 *
+	 * @version 0.0.0.20170504
+	 * @since 0.0
+	 *
+	 * @return the track
+	 */
+	public MusicLibraryTrack getTrack()
+	{
+		return track_;
 	}
 
 	/**

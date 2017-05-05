@@ -10,9 +10,9 @@
 
 <!-- Dev note: all fx IDs should end with an underscore and have a 1:1 relationship with a private field in SystemController.java -->
 
-<AnchorPane fx:id="systemAnchorPane_" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" pickOnBounds="false" prefHeight="612.0" prefWidth="968.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1">
+<AnchorPane fx:id="systemAnchorPane_" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" pickOnBounds="false" prefHeight="612.0" prefWidth="968.0" style="-fx-background-color: lightgrey;" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1">
    <children>
-      <MenuBar fx:id="systemMenuBar_" prefHeight="5.0" prefWidth="685.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+      <MenuBar fx:id="systemMenuBar_" prefHeight="5.0" prefWidth="685.0" style="-fx-background-color: silver;" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
         <menus>
           <Menu mnemonicParsing="true" text="_File">
             <items>
@@ -44,14 +44,13 @@
             </Menu>
         </menus>
       </MenuBar>
-      <Button fx:id="btnPrevious_" layoutX="14.0" layoutY="38.0" maxHeight="25.0" maxWidth="25.0" minHeight="30.0" minWidth="30.0" mnemonicParsing="false" prefHeight="25.0" prefWidth="25.0" text="|&lt;" AnchorPane.leftAnchor="10.0" AnchorPane.topAnchor="35.0" />
-      <Button fx:id="btnNext_" layoutX="53.0" layoutY="35.0" maxHeight="25.0" maxWidth="25.0" minHeight="30.0" minWidth="30.0" mnemonicParsing="false" prefHeight="25.0" prefWidth="25.0" text="&gt;|" AnchorPane.leftAnchor="50.0" AnchorPane.topAnchor="35.0" />
-      <Button fx:id="btnPlay_" layoutX="99.0" layoutY="35.0" maxHeight="25.0" maxWidth="25.0" minHeight="30.0" minWidth="30.0" mnemonicParsing="false" onAction="#playTrack" prefHeight="25.0" prefWidth="25.0" text="&gt;" AnchorPane.leftAnchor="90.0" AnchorPane.topAnchor="35.0" />
-      <Button fx:id="btnPause_" layoutX="137.0" layoutY="35.0" maxHeight="25.0" maxWidth="25.0" minHeight="30.0" minWidth="30.0" mnemonicParsing="false" onAction="#pauseTrack" prefHeight="25.0" prefWidth="25.0" text="||" AnchorPane.leftAnchor="130.0" AnchorPane.topAnchor="35.0" />
-      <Button fx:id="btnStop_" layoutX="173.0" layoutY="35.0" maxHeight="25.0" maxWidth="25.0" minHeight="30.0" minWidth="30.0" mnemonicParsing="false" onAction="#pauseTrack" prefHeight="25.0" prefWidth="25.0" text="O" AnchorPane.leftAnchor="170.0" AnchorPane.topAnchor="35.0" />
-      <MediaView fx:id="mediaView_" fitHeight="40.0" layoutX="259.0" layoutY="-57.0" AnchorPane.leftAnchor="210.0" AnchorPane.rightAnchor="210.0" AnchorPane.topAnchor="30.0" />
-      <Slider fx:id="volumeSlider_" layoutX="782.0" layoutY="43.0" max="100" maxWidth="180.0" minWidth="180.0" prefHeight="14.0" prefWidth="180.0" AnchorPane.rightAnchor="20.0" />
-      <TableView fx:id="musicLibraryTable_" layoutX="15.0" layoutY="48.0" prefHeight="466.0" prefWidth="968.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="75.0">
+      <Button fx:id="btnPrevious_" layoutX="14.0" layoutY="38.0" maxHeight="25.0" maxWidth="25.0" minHeight="30.0" minWidth="30.0" mnemonicParsing="false" prefHeight="25.0" prefWidth="25.0" text="|&lt;" AnchorPane.leftAnchor="30.0" AnchorPane.topAnchor="50.0" />
+      <Button fx:id="btnNext_" layoutX="53.0" layoutY="35.0" maxHeight="25.0" maxWidth="25.0" minHeight="30.0" minWidth="30.0" mnemonicParsing="false" prefHeight="25.0" prefWidth="25.0" text="&gt;|" AnchorPane.leftAnchor="70.0" AnchorPane.topAnchor="50.0" />
+      <Button fx:id="btnPlay_" layoutX="99.0" layoutY="35.0" maxHeight="25.0" maxWidth="25.0" minHeight="30.0" minWidth="30.0" mnemonicParsing="false" onAction="#playTrack" prefHeight="25.0" prefWidth="25.0" text="&gt;" AnchorPane.leftAnchor="110.0" AnchorPane.topAnchor="50.0" />
+      <Button fx:id="btnPause_" layoutX="137.0" layoutY="35.0" maxHeight="25.0" maxWidth="25.0" minHeight="30.0" minWidth="30.0" mnemonicParsing="false" onAction="#pauseTrack" prefHeight="25.0" prefWidth="25.0" text="||" AnchorPane.leftAnchor="150.0" AnchorPane.topAnchor="50.0" />
+      <Button fx:id="btnStop_" layoutX="173.0" layoutY="35.0" maxHeight="25.0" maxWidth="25.0" minHeight="30.0" minWidth="30.0" mnemonicParsing="false" onAction="#pauseTrack" prefHeight="25.0" prefWidth="25.0" text="O" AnchorPane.leftAnchor="190.0" AnchorPane.topAnchor="50.0" />
+      <Slider fx:id="volumeSlider_" blockIncrement="1.0" layoutX="782.0" layoutY="43.0" max="100" maxWidth="190.0" minWidth="100.0" prefHeight="14.0" prefWidth="190.0" AnchorPane.rightAnchor="30.0" AnchorPane.topAnchor="56.0" />
+      <TableView fx:id="musicLibraryTable_" layoutX="15.0" layoutY="102.0" prefHeight="510.0" prefWidth="968.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="100.0">
         <columns>
           <TableColumn fx:id="colTitle_" minWidth="150.0" prefWidth="250.0" text="Title" />
           <TableColumn fx:id="colArtist_" minWidth="100.0" prefWidth="98.0" text="Artist" />
@@ -60,5 +59,12 @@
           <TableColumn fx:id="colYear_" prefWidth="50.0" text="Year" />
         </columns>
       </TableView>
+      <VBox fx:id="currentTrackDisplayPane_" alignment="CENTER" layoutX="217.0" layoutY="28.0" prefHeight="64.0" prefWidth="468.0" style="-fx-background-color: whitesmoke; -fx-background-radius: 10;" AnchorPane.leftAnchor="250.0" AnchorPane.rightAnchor="250.0" AnchorPane.topAnchor="30.0">
+         <children>
+            <Label fx:id="currentTrackTitleDisplay_" text="Current Track Title" />
+            <Label fx:id="currentTrackArtistDisplay_" text="Current Track Artist" />
+            <Label fx:id="currentTrackAlbumDisplay_" text="Current Track Album" />
+         </children>
+      </VBox>
    </children>
 </AnchorPane>
