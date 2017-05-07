@@ -76,8 +76,6 @@ public class MusicLibraryTrack
 		String filePathString = filePath_.toUri().toString();
 		Media media = new Media(filePathString);
 
-		// TODO Research a better way to load media files
-		// XXX: Workaround because getMetadata() is asynchronous
 		media.getMetadata().addListener((MapChangeListener<? super String, ? super Object>) c -> {
 			if(c.wasAdded())
 			{

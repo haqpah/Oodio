@@ -23,6 +23,7 @@ import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
@@ -32,6 +33,8 @@ import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableColumn.CellDataFeatures;
 import javafx.scene.control.TableRow;
 import javafx.scene.control.TableView;
+import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
@@ -289,6 +292,7 @@ public class SystemController extends AbstractController implements FxmlControll
 				// Add it to the table view once its been added to more important systems
 				MusicLibraryTrackRow row = new MusicLibraryTrackRow(track);
 				musicLibraryTable_.getItems().add(row);
+				musicLibraryTable_.refresh();
 			}
 			catch (Exception e)
 			{
@@ -439,9 +443,10 @@ public class SystemController extends AbstractController implements FxmlControll
 			 * @since 0.0
 			 */
 			@Override
-			public void onChanged(Change<? extends MusicLibraryTrackRow> pChange)
+			public void onChanged(Change<? extends MusicLibraryTrackRow> change)
 			{
-				while (pChange.next())
+				// TODO This change event doesn't seem to get hit ever
+				while (change.next())
 				{
 					getSystemLogger().debug("Refreshing table after MusicLibraryTrackRow change event");
 					musicLibraryTable_.refresh();
@@ -495,32 +500,35 @@ public class SystemController extends AbstractController implements FxmlControll
 	private void setupTableFactories()
 	{
 		getSystemLogger().debug("Setting up row factory");
-
 		musicLibraryTable_.setRowFactory(tableView -> {
 			TableRow<MusicLibraryTrackRow> row = new TableRow<>();
 
+			// Double-click event
 			row.setOnMouseClicked(event -> {
-				if(event.getClickCount() == 2 && (!row.isEmpty())) // Double-click event
+				if(event.getClickCount() == 2 && (!row.isEmpty()))
 				{
-					MusicLibraryTrackRow selectedRow = row.getItem();
-					Media media = new Media(selectedRow.getTrack().getFilePath().toUri().toString());
-
-					systemPlayer_.stop();
-					systemPlayer_ = new MediaPlayer(media);
-
-					currentTrack_ = Optional.of(selectedRow.getTrack());
-
-					refreshCurrentTrackDisplay();
-
-					systemPlayer_.play();
+					playNewTrack(row.getItem());
 				}
 			});
 
 			return row;
 		});
 
-		getSystemLogger().debug("Setting up cell value factories");
+		// TODO Create Oodio implementation of JavaFX Event Handler
+		musicLibraryTable_.setOnKeyPressed(new EventHandler<KeyEvent>()
+		{
+			@Override
+			public void handle(final KeyEvent keyEvent)
+			{
+				if(keyEvent.getCode().equals(KeyCode.ENTER))
+				{
+					MusicLibraryTrackRow row = musicLibraryTable_.getSelectionModel().getSelectedItem();
+					playNewTrack(row);
+				}
+			}
+		});
 
+		getSystemLogger().debug("Setting up cell value factories");
 		// Title column
 		colTitle_.setCellValueFactory(
 				new Callback<CellDataFeatures<MusicLibraryTrackRow, String>, ObservableValue<String>>()
@@ -575,6 +583,29 @@ public class SystemController extends AbstractController implements FxmlControll
 						return row.getValue().yearProperty();
 					}
 				});
+	}
+
+	/**
+	 * Plays the track contained in the passed row. Stops any already playing track first
+	 *
+	 * @version 0.0.0.20170507
+	 * @since 0.0
+	 *
+	 * @param row
+	 *            the row in the table view
+	 */
+	private void playNewTrack(MusicLibraryTrackRow row)
+	{
+		Media media = new Media(row.getTrack().getFilePath().toUri().toString());
+
+		systemPlayer_.stop();
+		systemPlayer_ = new MediaPlayer(media);
+
+		currentTrack_ = Optional.of(row.getTrack());
+
+		refreshCurrentTrackDisplay();
+
+		systemPlayer_.play();
 	}
 
 	/**
