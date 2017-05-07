@@ -8,6 +8,7 @@ import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import org.apache.log4j.Logger;
 
@@ -18,6 +19,9 @@ import github.haqpah.oodio.services.SystemPathService;
 import javafx.beans.InvalidationListener;
 import javafx.beans.Observable;
 import javafx.beans.value.ObservableValue;
+import javafx.collections.FXCollections;
+import javafx.collections.ListChangeListener;
+import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
@@ -200,14 +204,14 @@ public class SystemController extends AbstractController implements FxmlControll
 		setupTableFactories();
 
 		// Get all the rows to add to the table
-		List<MusicLibraryTrackRow> rowList = createMusicLibraryTrackRows();
+		ObservableList<MusicLibraryTrackRow> observableRowList = createMusicLibraryTrackRows();
 
-		// Add the rows to the table
-		musicLibraryTable_.getItems().addAll(rowList);
+		// Setup the table
+		musicLibraryTable_.getItems().addAll(observableRowList);
 		musicLibraryTable_.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
 
+		// Load the default track
 		currentTrack_ = loadDefaultTrack();
-
 		refreshCurrentTrackDisplay();
 
 		// Setup volume slider
@@ -412,25 +416,42 @@ public class SystemController extends AbstractController implements FxmlControll
 	}
 
 	/**
-	 * Creates a list of populated rows that track metadata can be displayed on the {@link #musicLibraryTable_}
+	 * Creates an {@link ObservableList} of populated rows that track metadata can be displayed on the {@link #musicLibraryTable_}.
 	 *
 	 * @version 0.0.0.20170503
 	 * @since 0.0
 	 *
 	 * @return the list of rows that was created
 	 */
-	private List<MusicLibraryTrackRow> createMusicLibraryTrackRows()
+	private ObservableList<MusicLibraryTrackRow> createMusicLibraryTrackRows()
 	{
-		List<MusicLibraryTrackRow> list = new ArrayList<MusicLibraryTrackRow>();
+		List<MusicLibraryTrackRow> list = musicLibrary_.getLibrary()
+				.stream()
+				.map(track -> new MusicLibraryTrackRow(track))
+				.collect(Collectors.toList());
 
-		musicLibrary_.getLibrary().forEach(track -> {
-			MusicLibraryTrackRow row = new MusicLibraryTrackRow(track);
-			list.add(row);
+		// Make the list observable and add a listener for changes
+		ObservableList<MusicLibraryTrackRow> obsList = FXCollections.observableArrayList(list);
+		obsList.addListener(new ListChangeListener<MusicLibraryTrackRow>()
+		{
+			/**
+			 * @version 0.0.0.20170507
+			 * @since 0.0
+			 */
+			@Override
+			public void onChanged(Change<? extends MusicLibraryTrackRow> pChange)
+			{
+				while (pChange.next())
+				{
+					getSystemLogger().debug("Refreshing table after MusicLibraryTrackRow change event");
+					musicLibraryTable_.refresh();
+				}
+			}
 		});
 
-		getSystemLogger().debug("Created " + list.size() + " rows for library table view");
+		getSystemLogger().debug("Created " + obsList.size() + " rows for library table view");
 
-		return list;
+		return obsList;
 	}
 
 	/**

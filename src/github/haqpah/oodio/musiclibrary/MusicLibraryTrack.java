@@ -107,7 +107,7 @@ public class MusicLibraryTrack
 		try
 		{
 			// TODO Figure out how to get rid of this
-			Thread.sleep(200); // Sleeping an extra 100ms to let metadata populate
+			Thread.sleep(50); // Sleeping an extra 50ms to let metadata populate
 		}
 		catch (InterruptedException e)
 		{
