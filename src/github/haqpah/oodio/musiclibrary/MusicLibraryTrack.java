@@ -10,6 +10,7 @@ import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 import javafx.collections.MapChangeListener;
 import javafx.scene.media.Media;
+import javafx.scene.media.MediaException;
 
 /**
  * Contains values to be transformed into a {@link MusicLibraryRow}
@@ -63,7 +64,7 @@ public class MusicLibraryTrack
 	 * @throws InterruptedException
 	 *             if the thread is interrupted while loading new media
 	 */
-	public MusicLibraryTrack(Path filePath, Logger systemLogger) throws IllegalArgumentException, InterruptedException
+	public MusicLibraryTrack(Path filePath, Logger systemLogger)
 	{
 		filePath_ = filePath;
 
@@ -74,7 +75,16 @@ public class MusicLibraryTrack
 		year_ = new SimpleStringProperty();
 
 		String filePathString = filePath_.toUri().toString();
-		Media media = new Media(filePathString);
+
+		Media media = null;
+		try
+		{
+			media = new Media(filePathString);
+		}
+		catch (MediaException e)
+		{
+			systemLogger.debug("Could not create new music library track with URI\n\t" + filePathString);
+		}
 
 		media.getMetadata().addListener((MapChangeListener<? super String, ? super Object>) c -> {
 			if(c.wasAdded())

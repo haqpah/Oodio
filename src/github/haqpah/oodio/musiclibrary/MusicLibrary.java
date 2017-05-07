@@ -109,7 +109,7 @@ public class MusicLibrary
 	 *             if the {@link MusicLibraryTrack} load got interrupted
 	 * @throws URISyntaxException
 	 */
-	public MusicLibrary(Path musicLibraryDirectory, Logger systemLogger) throws IOException, InterruptedException, URISyntaxException
+	public MusicLibrary(Path musicLibraryDirectory, Logger systemLogger) throws IOException, URISyntaxException
 	{
 		musicLibrary_ = new ArrayList<MusicLibraryTrack>();
 

@@ -5,6 +5,8 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -12,6 +14,7 @@ import java.util.stream.Collectors;
 
 import org.apache.log4j.Logger;
 
+import github.haqpah.oodio.application.handler.OodioKeyEventHandler;
 import github.haqpah.oodio.musiclibrary.MusicLibrary;
 import github.haqpah.oodio.musiclibrary.MusicLibraryTrack;
 import github.haqpah.oodio.musiclibrary.MusicLibraryTrackRow;
@@ -23,7 +26,6 @@ import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
-import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
@@ -33,8 +35,6 @@ import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableColumn.CellDataFeatures;
 import javafx.scene.control.TableRow;
 import javafx.scene.control.TableView;
-import javafx.scene.input.KeyCode;
-import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
@@ -278,7 +278,8 @@ public class SystemController extends AbstractController implements FxmlControll
 		{
 			try
 			{
-				MusicLibraryTrack track = new MusicLibraryTrack(file, getSystemLogger());
+				Path path = file.toPath();
+				MusicLibraryTrack track = new MusicLibraryTrack(path, getSystemLogger());
 
 				// Add it to the in-memory library
 				if(!musicLibrary_.getLibrary().contains(track))
@@ -286,8 +287,14 @@ public class SystemController extends AbstractController implements FxmlControll
 					musicLibrary_.getLibrary().add(track);
 				}
 
-				// TODO Add track to the music library directory
-				getSystemLogger().debug("TODO Track added to music library directory in file system: " + track.toString());
+				// Copy the file to the music library directory
+				Path source = file.toPath();
+				Path destination = SystemPathService.getMusicLibraryDirectory()
+						.resolve(track.artistProperty().getValue())
+						.resolve(track.albumProperty().getValue())
+						.resolve(source.getFileName());
+
+				Files.copy(source, destination);
 
 				// Add it to the table view once its been added to more important systems
 				MusicLibraryTrackRow row = new MusicLibraryTrackRow(track);
@@ -502,8 +509,6 @@ public class SystemController extends AbstractController implements FxmlControll
 		getSystemLogger().debug("Setting up row factory");
 		musicLibraryTable_.setRowFactory(tableView -> {
 			TableRow<MusicLibraryTrackRow> row = new TableRow<>();
-
-			// Double-click event
 			row.setOnMouseClicked(event -> {
 				if(event.getClickCount() == 2 && (!row.isEmpty()))
 				{
@@ -514,19 +519,7 @@ public class SystemController extends AbstractController implements FxmlControll
 			return row;
 		});
 
-		// TODO Create Oodio implementation of JavaFX Event Handler
-		musicLibraryTable_.setOnKeyPressed(new EventHandler<KeyEvent>()
-		{
-			@Override
-			public void handle(final KeyEvent keyEvent)
-			{
-				if(keyEvent.getCode().equals(KeyCode.ENTER))
-				{
-					MusicLibraryTrackRow row = musicLibraryTable_.getSelectionModel().getSelectedItem();
-					playNewTrack(row);
-				}
-			}
-		});
+		musicLibraryTable_.setOnKeyPressed(new OodioKeyEventHandler(musicLibraryTable_, systemPlayer_));
 
 		getSystemLogger().debug("Setting up cell value factories");
 		// Title column
