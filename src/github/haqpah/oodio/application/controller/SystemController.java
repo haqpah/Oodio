@@ -203,37 +203,15 @@ public class SystemController extends AbstractController implements FxmlControll
 
 		musicLibrary_ = musicLibrary;
 
-		// Setup cell value factories with observable values
-		setupTableFactories();
+		setupCellValueFactories();
+		setupRowEventHandlers();
+		setupVolumeSlider();
 
-		// Get all the rows to add to the table
-		ObservableList<MusicLibraryTrackRow> observableRowList = createMusicLibraryTrackRows();
-
-		// Setup the table
-		musicLibraryTable_.getItems().addAll(observableRowList);
-		musicLibraryTable_.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
+		populateMusicLibraryTable();
 
 		// Load the default track
 		currentTrack_ = loadDefaultTrack();
 		refreshCurrentTrackDisplay();
-
-		// Setup volume slider
-		volumeSlider_.setValue(systemPlayer_.getVolume() * 100);
-		volumeSlider_.valueProperty().addListener(new InvalidationListener()
-		{
-			/**
-			 * @version 0.0.0.20170503
-			 * @since 0.0
-			 */
-			@Override
-			public void invalidated(Observable observable)
-			{
-				if(volumeSlider_.isValueChanging())
-				{
-					systemPlayer_.setVolume(volumeSlider_.getValue() / 100.0);
-				}
-			}
-		});
 	}
 
 	/*************************************************
@@ -498,15 +476,77 @@ public class SystemController extends AbstractController implements FxmlControll
 	}
 
 	/**
-	 * Sets up the cell value factories with observable string
-	 * properties in the {@link MusicLibraryTrackRow} object
+	 * Sets up the cell values in each column with observable
+	 * string properties in the {@link MusicLibraryTrackRow}
 	 *
 	 * @version 0.0.0.20170503
 	 * @since 0.0
 	 */
-	private void setupTableFactories()
+	private void setupCellValueFactories()
 	{
-		getSystemLogger().debug("Setting up row factory");
+		getSystemLogger().debug("Setting up cell value factories");
+		colTitle_.setCellValueFactory(
+				new Callback<CellDataFeatures<MusicLibraryTrackRow, String>, ObservableValue<String>>()
+				{
+					@Override
+					public ObservableValue<String> call(CellDataFeatures<MusicLibraryTrackRow, String> row)
+					{
+						return row.getValue().titleProperty();
+					}
+				});
+
+		colArtist_.setCellValueFactory(
+				new Callback<CellDataFeatures<MusicLibraryTrackRow, String>, ObservableValue<String>>()
+				{
+					@Override
+					public ObservableValue<String> call(CellDataFeatures<MusicLibraryTrackRow, String> row)
+					{
+						return row.getValue().artistProperty();
+					}
+				});
+
+		colAlbum_.setCellValueFactory(
+				new Callback<CellDataFeatures<MusicLibraryTrackRow, String>, ObservableValue<String>>()
+				{
+					@Override
+					public ObservableValue<String> call(CellDataFeatures<MusicLibraryTrackRow, String> row)
+					{
+						return row.getValue().albumProperty();
+					}
+				});
+
+		colGenre_.setCellValueFactory(
+				new Callback<CellDataFeatures<MusicLibraryTrackRow, String>, ObservableValue<String>>()
+				{
+					@Override
+					public ObservableValue<String> call(CellDataFeatures<MusicLibraryTrackRow, String> row)
+					{
+						return row.getValue().genreProperty();
+					}
+				});
+
+		colYear_.setCellValueFactory(
+				new Callback<CellDataFeatures<MusicLibraryTrackRow, String>, ObservableValue<String>>()
+				{
+					@Override
+					public ObservableValue<String> call(CellDataFeatures<MusicLibraryTrackRow, String> row)
+					{
+						return row.getValue().yearProperty();
+					}
+				});
+	}
+
+	/**
+	 * Sets up the event handlers on rows in the music library
+	 * table. This includes click and keypress events
+	 *
+	 * @see {@link OodioKeyEventHandler}
+	 *
+	 * @version 0.0.0.20170509
+	 * @since 0.0
+	 */
+	private void setupRowEventHandlers()
+	{
 		musicLibraryTable_.setRowFactory(tableView -> {
 			TableRow<MusicLibraryTrackRow> row = new TableRow<>();
 			row.setOnMouseClicked(event -> {
@@ -520,62 +560,50 @@ public class SystemController extends AbstractController implements FxmlControll
 		});
 
 		musicLibraryTable_.setOnKeyPressed(new OodioKeyEventHandler(musicLibraryTable_, systemPlayer_));
+	}
 
-		getSystemLogger().debug("Setting up cell value factories");
-		// Title column
-		colTitle_.setCellValueFactory(
-				new Callback<CellDataFeatures<MusicLibraryTrackRow, String>, ObservableValue<String>>()
+	/**
+	 * Sets up the volume slider with an initial value, as well as the event
+	 * listener to handle the user changing the volume during runtime
+	 *
+	 * @version 0.0.0.20170509
+	 * @since 0.0
+	 */
+	private void setupVolumeSlider()
+	{
+		volumeSlider_.setValue(systemPlayer_.getVolume() * 100);
+		volumeSlider_.valueProperty().addListener(new InvalidationListener()
+		{
+			/**
+			 * @version 0.0.0.20170503
+			 * @since 0.0
+			 */
+			@Override
+			public void invalidated(Observable observable)
+			{
+				if(volumeSlider_.isValueChanging())
 				{
-					@Override
-					public ObservableValue<String> call(CellDataFeatures<MusicLibraryTrackRow, String> row)
-					{
-						return row.getValue().titleProperty();
-					}
-				});
+					systemPlayer_.setVolume(volumeSlider_.getValue() / 100.0);
+				}
+			}
+		});
+	}
 
-		// Artist column
-		colArtist_.setCellValueFactory(
-				new Callback<CellDataFeatures<MusicLibraryTrackRow, String>, ObservableValue<String>>()
-				{
-					@Override
-					public ObservableValue<String> call(CellDataFeatures<MusicLibraryTrackRow, String> row)
-					{
-						return row.getValue().artistProperty();
-					}
-				});
+	/**
+	 * Populates the library on startup.
+	 *
+	 * @see {@link #addTrackToLibrary(ActionEvent)
+	 *
+	 * @version 0.0.0.20170509
+	 * @since 0.0
+	 */
+	private void populateMusicLibraryTable()
+	{
+		// Get all the rows to add to the table
+		ObservableList<MusicLibraryTrackRow> observableRowList = createMusicLibraryTrackRows();
 
-		// Album column
-		colAlbum_.setCellValueFactory(
-				new Callback<CellDataFeatures<MusicLibraryTrackRow, String>, ObservableValue<String>>()
-				{
-					@Override
-					public ObservableValue<String> call(CellDataFeatures<MusicLibraryTrackRow, String> row)
-					{
-						return row.getValue().albumProperty();
-					}
-				});
-
-		// Genre column
-		colGenre_.setCellValueFactory(
-				new Callback<CellDataFeatures<MusicLibraryTrackRow, String>, ObservableValue<String>>()
-				{
-					@Override
-					public ObservableValue<String> call(CellDataFeatures<MusicLibraryTrackRow, String> row)
-					{
-						return row.getValue().genreProperty();
-					}
-				});
-
-		// Year column
-		colYear_.setCellValueFactory(
-				new Callback<CellDataFeatures<MusicLibraryTrackRow, String>, ObservableValue<String>>()
-				{
-					@Override
-					public ObservableValue<String> call(CellDataFeatures<MusicLibraryTrackRow, String> row)
-					{
-						return row.getValue().yearProperty();
-					}
-				});
+		musicLibraryTable_.getItems().addAll(observableRowList);
+		musicLibraryTable_.refresh();
 	}
 
 	/**

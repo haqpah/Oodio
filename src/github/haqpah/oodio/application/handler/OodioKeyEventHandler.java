@@ -27,7 +27,6 @@ public class OodioKeyEventHandler implements EventHandler<KeyEvent>
 	/**
 	 * The system player that may need manipulation based on the pressed key
 	 */
-	@SuppressWarnings("unused")
 	private MediaPlayer systemPlayer_;
 
 	/**
@@ -58,9 +57,50 @@ public class OodioKeyEventHandler implements EventHandler<KeyEvent>
 
 		if(keyEvent.getCode().equals(KeyCode.ENTER))
 		{
-			MusicLibraryTrack track = selectedItem.getTrack();
+			handleEnter(selectedItem);
+		}
+		else if(keyEvent.getCode().equals(KeyCode.SPACE))
+		{
+			handleSpace();
+		}
+	}
+
+	/**
+	 * Handles an enter key press event
+	 *
+	 * @version 0.0.0.20170507
+	 * @since 0.0
+	 *
+	 * @param row
+	 *            the row that was focused while enter was pressed
+	 */
+	private void handleEnter(MusicLibraryTrackRow row)
+	{
+		if(row != null)
+		{
+			systemPlayer_.stop(); // May or may not be needed, but does not throw an exception
+
+			MusicLibraryTrack track = row.getTrack();
 			Media media = new Media(track.getFilePath().toUri().toString());
 			systemPlayer_ = new MediaPlayer(media);
+		}
+	}
+
+	/**
+	 * Handles a space key press event
+	 *
+	 * @version 0.0.0.20170507
+	 * @since 0.0
+	 */
+	private void handleSpace()
+	{
+		if(systemPlayer_.statusProperty().equals(MediaPlayer.Status.PLAYING))
+		{
+			systemPlayer_.pause();
+		}
+		else
+		{
+			systemPlayer_.play();
 		}
 	}
 }
