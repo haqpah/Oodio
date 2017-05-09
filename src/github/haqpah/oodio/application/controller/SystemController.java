@@ -7,7 +7,6 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -26,6 +25,7 @@ import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
@@ -35,6 +35,8 @@ import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableColumn.CellDataFeatures;
 import javafx.scene.control.TableRow;
 import javafx.scene.control.TableView;
+import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
@@ -205,13 +207,13 @@ public class SystemController extends AbstractController implements FxmlControll
 
 		setupCellValueFactories();
 		setupRowEventHandlers();
-		setupVolumeSlider();
 
 		populateMusicLibraryTable();
 
-		// Load the default track
 		currentTrack_ = loadDefaultTrack();
 		refreshCurrentTrackDisplay();
+
+		setupVolumeSlider();
 	}
 
 	/*************************************************
@@ -559,7 +561,43 @@ public class SystemController extends AbstractController implements FxmlControll
 			return row;
 		});
 
-		musicLibraryTable_.setOnKeyPressed(new OodioKeyEventHandler(musicLibraryTable_, systemPlayer_));
+		musicLibraryTable_.setOnKeyPressed(new EventHandler<KeyEvent>()
+		{
+			/**
+			 * @version 0.0.0.20170509
+			 * @since 0.0
+			 */
+			@Override
+			public void handle(KeyEvent keyEvent)
+			{
+				MusicLibraryTrackRow row = musicLibraryTable_.getSelectionModel().getSelectedItem();
+				if(keyEvent.getCode().equals(KeyCode.ENTER))
+				{
+					// Play a new track
+					playNewTrack(row);
+				}
+				else if(keyEvent.getCode().equals(KeyCode.SPACE))
+				{
+					if(systemPlayer_.getMedia() != null)
+					{
+						// Toggle the paused state of the player
+						if(systemPlayer_.statusProperty().getValue().equals(MediaPlayer.Status.PLAYING))
+						{
+							systemPlayer_.pause();
+						}
+						else
+						{
+							systemPlayer_.play();
+						}
+					}
+					else
+					{
+						// Play the highlighted track, no track is loaded and the hello world is not loaded
+						playNewTrack(row);
+					}
+				}
+			}
+		});
 	}
 
 	/**
@@ -630,6 +668,20 @@ public class SystemController extends AbstractController implements FxmlControll
 	}
 
 	/**
+	 * Pass-through to {@link #playNewTrack(MusicLibraryTrackRow)} plays the passed track
+	 *
+	 * @version 0.0.0.20170507
+	 * @since 0.0
+	 *
+	 * @param track
+	 *            the track to play
+	 */
+	private void playNewTrack(MusicLibraryTrack track)
+	{
+		playNewTrack(new MusicLibraryTrackRow(track));
+	}
+
+	/**
 	 * Refreshes the current track display with updated information
 	 *
 	 * @version 0.0.0.20170504
@@ -672,26 +724,5 @@ public class SystemController extends AbstractController implements FxmlControll
 		}
 
 		currentTrackDisplayPane_.getChildren().addAll(currentTrackTitleDisplay_, currentTrackArtistDisplay_, currentTrackAlbumDisplay_);
-	}
-
-	/**
-	 * Convenience method to get all the columns of the {@link #musicLibraryTable_} in a {@link List}
-	 *
-	 * @version 0.0.0.20170503
-	 * @since 0.0
-	 *
-	 * @return the list
-	 */
-	private List<TableColumn<MusicLibraryTrackRow, String>> getColumnsAsList()
-	{
-		List<TableColumn<MusicLibraryTrackRow, String>> columnList = new ArrayList<TableColumn<MusicLibraryTrackRow, String>>();
-
-		columnList.add(colTitle_);
-		columnList.add(colArtist_);
-		columnList.add(colAlbum_);
-		columnList.add(colGenre_);
-		columnList.add(colYear_);
-
-		return columnList;
 	}
 }
