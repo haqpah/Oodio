@@ -8,13 +8,14 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
+import github.haqpah.oodio.musiclibrary.track.Track;
 import github.haqpah.oodio.services.SystemPathService;
-import javafx.scene.media.Media;
 
 /**
- * The music library. Contains an in-memory collection of {@link MusicLibraryTrack}.
+ * The music library. Contains an in-memory collection of {@link Track}.
  * <p>
  * This is <strong>not</strong> a collection of playable media files!
  * <p>
@@ -22,77 +23,27 @@ import javafx.scene.media.Media;
  * traversing through the user's music library directory. This object should be used on
  * start-up.
  *
- * TODO look into leveraging this object for playlists
- *
  * @version 0.0.1.20170501
  * @since 0.0
  */
 public class MusicLibrary
 {
 	/**
-	 * A collection of {@link MusicLibraryTrack}.
+	 * The logger for this class
+	 */
+	public static Logger logger_ = LogManager.getLogger(MusicLibrary.class);
+
+	/**
+	 * A collection of {@link Track}.
 	 * <p>
 	 * This is <strong>not</strong> a collection of playable media files! This is a collection of track metadata for
 	 * populating the system's main table view. When a row is clicked, this library will search for the metadata in
 	 * order to find the file in the user's file system
 	 */
-	public static List<MusicLibraryTrack> musicLibrary_;
+	public static List<Track> musicLibrary_;
 
 	/**
-	 * Holds the string representation of the key that {@link Media#getMetadata()} returns/expects
-	 *
-	 * @version 0.0.0.20170429
-	 * @since 0.0
-	 */
-	public enum MediaMetadataKey
-	{
-		ALBUM_ARTIST("album artist"),
-		TRACK_NUMBER("track number"),
-		IMAGE("image"),
-		ARTIST("artist"),
-		YEAR("year"),
-		ALBUM("album"),
-		COMPOSER("composer"),
-		TITLE("title"),
-		DISC_NUMBER("disc number"),
-		GENRE("genre"),
-		;
-
-		/**
-		 * The string representation of the key
-		 */
-		private String key_;
-
-		/**
-		 * Holds the string representation of the key that {@link Media#getMetadata()} returns/expects
-		 *
-		 * @version 0.0.0.20170429
-		 * @since 0.0
-		 *
-		 * @param key
-		 *            the key of the map returned from {@link Media#getMetadata()}
-		 */
-		MediaMetadataKey(String key)
-		{
-			key_ = key;
-		}
-
-		/**
-		 * Return the metadata key
-		 *
-		 * @version 0.0.0.20170429
-		 * @since 0.0
-		 *
-		 * @return
-		 */
-		public String getKey()
-		{
-			return key_;
-		}
-	}
-
-	/**
-	 * The music library loaded in-memory as a collection of {@link MusicLibraryTrack}.
+	 * The music library loaded in-memory as a collection of {@link Track}.
 	 * <p>
 	 * This is <strong>not</strong> a collection of playable media files! This is a collection of track metadata for
 	 * populating the system's main table view. When a row is clicked, this library will search for the metadata in
@@ -106,17 +57,17 @@ public class MusicLibrary
 	 * @throws IOException
 	 *             if a file path cannot be used or discovered
 	 * @throws InterruptedException
-	 *             if the {@link MusicLibraryTrack} load got interrupted
+	 *             if the {@link Track} load got interrupted
 	 * @throws URISyntaxException
 	 */
-	public MusicLibrary(Path musicLibraryDirectory, Logger systemLogger) throws IOException, URISyntaxException
+	public MusicLibrary() throws IOException, URISyntaxException
 	{
-		musicLibrary_ = new ArrayList<MusicLibraryTrack>();
+		musicLibrary_ = new ArrayList<Track>();
 
-		discoverOrCreateMusicLibraryDirectory(systemLogger);
+		discoverOrCreateMusicLibraryDirectory();
 
-		systemLogger.debug("Traversing music library directory");
-		DirectoryStream<Path> musicLibrary = Files.newDirectoryStream(musicLibraryDirectory);
+		logger_.debug("Traversing music library directory");
+		DirectoryStream<Path> musicLibrary = Files.newDirectoryStream(SystemPathService.getMusicLibraryDirectory());
 		for(Path artistPath : musicLibrary)
 		{
 			DirectoryStream<Path> artist = Files.newDirectoryStream(artistPath);
@@ -125,13 +76,13 @@ public class MusicLibrary
 				DirectoryStream<Path> album = Files.newDirectoryStream(albumPath);
 				for(Path songPath : album)
 				{
-					MusicLibraryTrack track = new MusicLibraryTrack(songPath, systemLogger);
+					Track track = new Track(songPath);
 					musicLibrary_.add(track);
 				}
 			}
 		}
 
-		systemLogger.debug("Music library loaded with " + musicLibrary_.size() + " tracks");
+		logger_.debug("Music library loaded with " + musicLibrary_.size() + " tracks");
 	}
 
 	/**
@@ -142,13 +93,13 @@ public class MusicLibrary
 	 *
 	 * @return the library
 	 */
-	public List<MusicLibraryTrack> getLibrary()
+	public List<Track> getLibrary()
 	{
 		return musicLibrary_;
 	}
 
 	/**
-	 * Returns the {@link MusicLibraryTrack} at the first position in this library.
+	 * Returns the {@link Track} at the first position in this library.
 	 * <p>
 	 * Theoretically, this should be the first track whose metadata was discovered
 	 * when this library was instantiated.
@@ -158,7 +109,7 @@ public class MusicLibrary
 	 *
 	 * @return the first track in the library
 	 */
-	public MusicLibraryTrack getFirst()
+	public Track getFirst()
 	{
 		return musicLibrary_.get(0);
 	}
@@ -187,14 +138,14 @@ public class MusicLibrary
 	 * @version 0.0.1.20170503
 	 * @since 0.0
 	 */
-	private void discoverOrCreateMusicLibraryDirectory(Logger systemLogger)
+	private void discoverOrCreateMusicLibraryDirectory()
 	{
 		Path library = SystemPathService.getMusicLibraryDirectory();
 
 		// Search for an existing library
 		if(Files.exists(library))
 		{
-			systemLogger.info("Discovered existing music library at " + library.toString());
+			logger_.info("Discovered existing music library at " + library.toString());
 		}
 		else
 		{
@@ -202,11 +153,11 @@ public class MusicLibrary
 			{
 				// Create the library
 				Files.createDirectory(library);
-				systemLogger.info("Created new music library at " + library.toString());
+				logger_.info("Created new music library at " + library.toString());
 			}
 			catch (IOException e)
 			{
-				systemLogger.error("Could not create music library directory at " + library.toString(), e);
+				logger_.error("Could not create music library directory at " + library.toString(), e);
 			}
 		}
 	}

@@ -4,13 +4,13 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.nio.file.Path;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import github.haqpah.oodio.services.SystemPathService;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Node;
 import javafx.scene.layout.Pane;
-import javafx.stage.Stage;
 
 /**
  * Abstract implementation of a controller for FXML files
@@ -27,14 +27,9 @@ abstract class AbstractController implements FxmlController
 	private FXMLLoader fxmlLoader_;
 
 	/**
-	 * Responsbile for logging runtime information for a controller
+	 * Responsible for logging runtime information for a controller
 	 */
-	private Logger systemLogger_;
-
-	/**
-	 * The stage this controller's parent pane is attached to
-	 */
-	private Stage primaryStage_; // TODO Figure out better way to access primary stage within controller
+	private Logger logger_ = LogManager.getLogger(AbstractController.class);
 
 	/**
 	 * The root {@link Node} that this controller's UI elements are contained in, defined by the FXML
@@ -47,18 +42,11 @@ abstract class AbstractController implements FxmlController
 	 * @version 0.0.0.20170426
 	 * @since 0.0
 	 *
-	 * @param primaryStage
-	 *            The stage this controller's parent pane is attached to
-	 * @param systemLogger
-	 *            Responsible for logging information to the console and log file
 	 * @param fxmlFilename
 	 *            The FXML file name for this controller
 	 */
-	public AbstractController(Stage primaryStage, Logger systemLogger, String fxmlFilename)
+	public AbstractController(String fxmlFilename)
 	{
-		primaryStage_ = primaryStage;
-		systemLogger_ = systemLogger;
-
 		try
 		{
 			fxmlLoader_ = new FXMLLoader();
@@ -67,54 +55,11 @@ abstract class AbstractController implements FxmlController
 			Path fxmlPath = SystemPathService.getFxmlDirectory().resolve(fxmlFilename);
 			FileInputStream stream = new FileInputStream(fxmlPath.toString());
 			rootPane_ = getFxmlLoader().load(stream);
-
-			// ((Region) rootNode_).prefWidthProperty().bind(primaryStage.widthProperty());
 		}
 		catch (IOException e)
 		{
-			addLog("Exception occurred while setting up controller\n  File: " + fxmlFilename, e);
+			logger_.error("Exception occurred while setting up controller\n  File: " + fxmlFilename, e);
 		}
-	}
-
-	/**
-	 * Logs a message to the system log file
-	 *
-	 * @version 0.0.0.20170427
-	 * @since 0.0
-	 *
-	 * @param logMessage
-	 *            the message to log
-	 */
-	protected void addLog(String logMessage)
-	{
-		systemLogger_.info(logMessage);
-	}
-
-	/**
-	 * Logs a message with an exception to the system log file
-	 *
-	 * @version 0.0.0.20170427
-	 * @since 0.0
-	 *
-	 * @param logMessage
-	 *            the message to log
-	 * @param throwable
-	 *            the exception that occurred
-	 */
-	protected void addLog(String logMessage, Throwable throwable)
-	{
-		systemLogger_.error(logMessage, throwable);
-	}
-
-	/**
-	 * Gets the system logger passed into this controller
-	 *
-	 * @version 0.0.0.20170427
-	 * @since 0.0
-	 */
-	protected Logger getSystemLogger()
-	{
-		return systemLogger_;
 	}
 
 	/**
@@ -132,17 +77,7 @@ abstract class AbstractController implements FxmlController
 	 * @since 0.0
 	 */
 	@Override
-	public Stage getPrimaryStage()
-	{
-		return primaryStage_;
-	}
-
-	/**
-	 * @version 0.0.0.20170426
-	 * @since 0.0
-	 */
-	@Override
-	public Pane getRootNode()
+	public Pane getRootPane()
 	{
 		return rootPane_;
 	}

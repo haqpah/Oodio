@@ -1,15 +1,14 @@
 package github.haqpah.oodio;
 
-import org.apache.log4j.Logger;
-import org.apache.log4j.PropertyConfigurator;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import github.haqpah.oodio.application.controller.FxmlController;
 import github.haqpah.oodio.application.controller.SystemController;
 import github.haqpah.oodio.musiclibrary.MusicLibrary;
-import github.haqpah.oodio.services.SystemPathService;
 import javafx.application.Application;
 import javafx.scene.Scene;
-import javafx.scene.layout.AnchorPane;
+import javafx.scene.layout.Pane;
 import javafx.stage.Stage;
 
 /**
@@ -29,24 +28,14 @@ import javafx.stage.Stage;
 public class Oodio extends Application
 {
 	/**
+	 * The logger for this class
+	 */
+	public static Logger logger_ = LogManager.getLogger(Oodio.class);
+
+	/**
 	 * Official name for the application
 	 */
 	private static final String APPLICATION_NAME_ = "Oodio";
-
-	/**
-	 * The {@link OodioLogger} object for the application
-	 */
-	public static Logger systemLogger_;
-
-	/**
-	 * The primary {@link Stage} for Oodio.
-	 */
-	public static Stage primaryStage_;
-
-	/**
-	 * The music library loaded in-memory. This is <strong>not</strong> a collection of playable media files!
-	 */
-	public static MusicLibrary musicLibrary_;
 
 	/**
 	 * The main method for the Oodio media player
@@ -59,20 +48,8 @@ public class Oodio extends Application
 	 */
 	public static void main(String[] args)
 	{
-		PropertyConfigurator.configure(SystemPathService.getLog4jPropertiesFilePath().toString());
-		systemLogger_ = Logger.getLogger("rootLogger");
-		systemLogger_.info(APPLICATION_NAME_ + " has begun execution");
-
-		try
-		{
-			musicLibrary_ = new MusicLibrary(SystemPathService.getMusicLibraryDirectory(), systemLogger_);
-		}
-		catch (Exception e)
-		{
-			systemLogger_.error("Could not load music library", e);
-		}
-
-		systemLogger_.info("Launching application");
+		logger_.info(APPLICATION_NAME_ + " has begun execution");
+		logger_.info("Launching application");
 
 		launch();
 	}
@@ -80,20 +57,28 @@ public class Oodio extends Application
 	/**
 	 * Main entry point to the JavaFX application
 	 *
-	 * @version 0.0.1.20170423
+	 * @version 0.2.0.20170510
 	 * @since 0.0
 	 */
 	@Override
 	public void start(Stage primaryStage)
 	{
-		primaryStage_ = primaryStage;
-		primaryStage_.setTitle(APPLICATION_NAME_);
+		try
+		{
+			MusicLibrary musicLibrary = new MusicLibrary();
 
-		FxmlController systemController = new SystemController(primaryStage_, systemLogger_, musicLibrary_);
+			FxmlController systemController = new SystemController(musicLibrary);
+			Pane root = systemController.getRootPane();
+			primaryStage.setScene(new Scene(root));
+		}
+		catch (Exception e)
+		{
+			logger_.error("Could not load music library", e);
+		}
 
-		primaryStage_.setScene(new Scene((AnchorPane) systemController.getRootNode()));
-		primaryStage_.setMaximized(true);
-		primaryStage_.show();
+		primaryStage.setTitle(APPLICATION_NAME_);
+		primaryStage.setMaximized(true);
+		primaryStage.show();
 	}
 
 	/**
@@ -103,8 +88,8 @@ public class Oodio extends Application
 	@Override
 	public void stop() throws Exception
 	{
-		systemLogger_.info("Exiting application via X button");
-		systemLogger_.shutdown(); // TODO Research logger shutdown
+		logger_.info("Exiting application via X button");
+		LogManager.shutdown();
 
 		super.stop();
 		System.exit(0);

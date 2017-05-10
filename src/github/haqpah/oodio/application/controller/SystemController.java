@@ -11,12 +11,12 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
-import github.haqpah.oodio.application.handler.OodioKeyEventHandler;
 import github.haqpah.oodio.musiclibrary.MusicLibrary;
-import github.haqpah.oodio.musiclibrary.MusicLibraryTrack;
-import github.haqpah.oodio.musiclibrary.MusicLibraryTrackRow;
+import github.haqpah.oodio.musiclibrary.track.Track;
+import github.haqpah.oodio.musiclibrary.track.TrackRow;
 import github.haqpah.oodio.services.SystemPathService;
 import javafx.beans.InvalidationListener;
 import javafx.beans.Observable;
@@ -43,7 +43,6 @@ import javafx.scene.layout.VBox;
 import javafx.scene.media.Media;
 import javafx.scene.media.MediaPlayer;
 import javafx.stage.FileChooser;
-import javafx.stage.Stage;
 import javafx.util.Callback;
 
 /**
@@ -54,6 +53,11 @@ import javafx.util.Callback;
  */
 public class SystemController extends AbstractController implements FxmlController
 {
+	/**
+	 * The logger for this class
+	 */
+	public static Logger logger_ = LogManager.getLogger(SystemController.class);
+
 	/**
 	 * The FXML file name for this controller
 	 */
@@ -88,7 +92,7 @@ public class SystemController extends AbstractController implements FxmlControll
 	 * The current track loaded into the {@link #systemPlayer_}. This is not a playable
 	 * media file! This is a metadata object
 	 */
-	private Optional<MusicLibraryTrack> currentTrack_;
+	private Optional<Track> currentTrack_;
 
 	/**
 	 * The pane where metadata about the {@link #currentTrack_} is displayed
@@ -154,37 +158,37 @@ public class SystemController extends AbstractController implements FxmlControll
 	 * The {@link TableView} that shows the users music files
 	 */
 	@FXML
-	private TableView<MusicLibraryTrackRow> musicLibraryTable_;
+	private TableView<TrackRow> musicLibraryTable_;
 
 	/**
 	 * The {@link TableColumn} the shows the title of a track
 	 */
 	@FXML
-	private TableColumn<MusicLibraryTrackRow, String> colTitle_;
+	private TableColumn<TrackRow, String> colTitle_;
 
 	/**
 	 * The {@link TableColumn} the shows the artist of a track
 	 */
 	@FXML
-	private TableColumn<MusicLibraryTrackRow, String> colArtist_;
+	private TableColumn<TrackRow, String> colArtist_;
 
 	/**
 	 * The {@link TableColumn} the shows the album of a track
 	 */
 	@FXML
-	private TableColumn<MusicLibraryTrackRow, String> colAlbum_;
+	private TableColumn<TrackRow, String> colAlbum_;
 
 	/**
 	 * The {@link TableColumn} the shows the genre of a track
 	 */
 	@FXML
-	private TableColumn<MusicLibraryTrackRow, String> colGenre_;
+	private TableColumn<TrackRow, String> colGenre_;
 
 	/**
 	 * The {@link TableColumn} the shows the year of a track
 	 */
 	@FXML
-	private TableColumn<MusicLibraryTrackRow, String> colYear_;
+	private TableColumn<TrackRow, String> colYear_;
 
 	/**
 	 * Constructor
@@ -194,14 +198,14 @@ public class SystemController extends AbstractController implements FxmlControll
 	 *
 	 * @param primaryStage
 	 *            The stage this controller's parent pane is attached to
-	 * @param systemLogger
+	 * @param logger_
 	 *            Responsible for logging information to the console and log file
 	 * @param musicLibrary
 	 *            The {@link MusicLibrary} containing metadata on the files in the user's system
 	 */
-	public SystemController(Stage primaryStage, Logger systemLogger, MusicLibrary musicLibrary)
+	public SystemController(MusicLibrary musicLibrary)
 	{
-		super(primaryStage, systemLogger, FXML_FILENAME_);
+		super(FXML_FILENAME_);
 
 		musicLibrary_ = musicLibrary;
 
@@ -252,14 +256,14 @@ public class SystemController extends AbstractController implements FxmlControll
 	protected void addTrackToLibrary(ActionEvent event) throws Exception
 	{
 		FileChooser fileChooser = new FileChooser();
-		File file = fileChooser.showOpenDialog(getPrimaryStage());
+		File file = fileChooser.showOpenDialog(getRootPane().getScene().getWindow());
 
 		if(file != null)
 		{
 			try
 			{
 				Path path = file.toPath();
-				MusicLibraryTrack track = new MusicLibraryTrack(path, getSystemLogger());
+				Track track = new Track(path);
 
 				// Add it to the in-memory library
 				if(!musicLibrary_.getLibrary().contains(track))
@@ -277,7 +281,7 @@ public class SystemController extends AbstractController implements FxmlControll
 				Files.copy(source, destination);
 
 				// Add it to the table view once its been added to more important systems
-				MusicLibraryTrackRow row = new MusicLibraryTrackRow(track);
+				TrackRow row = new TrackRow(track);
 				musicLibraryTable_.getItems().add(row);
 				musicLibraryTable_.refresh();
 			}
@@ -299,9 +303,9 @@ public class SystemController extends AbstractController implements FxmlControll
 	@FXML
 	protected void exitApplication(ActionEvent event)
 	{
-		getSystemLogger().info("Exiting application via system menu");
+		logger_.info("Exiting application via system menu");
 
-		getSystemLogger().shutdown(); // TODO Research logger shutdown
+		LogManager.shutdown();
 		System.exit(0);
 	}
 
@@ -324,7 +328,7 @@ public class SystemController extends AbstractController implements FxmlControll
 			}
 			catch (IOException | URISyntaxException e)
 			{
-				getSystemLogger().error("Failed to load github link to the README", e);
+				logger_.error("Failed to load github link to the README", e);
 			}
 		}
 	}
@@ -348,7 +352,7 @@ public class SystemController extends AbstractController implements FxmlControll
 			}
 			catch (IOException | URISyntaxException e)
 			{
-				getSystemLogger().error("Failed to load github link to the Wiki", e);
+				logger_.error("Failed to load github link to the Wiki", e);
 			}
 		}
 	}
@@ -414,34 +418,34 @@ public class SystemController extends AbstractController implements FxmlControll
 	 *
 	 * @return the list of rows that was created
 	 */
-	private ObservableList<MusicLibraryTrackRow> createMusicLibraryTrackRows()
+	private ObservableList<TrackRow> createMusicLibraryTrackRows()
 	{
-		List<MusicLibraryTrackRow> list = musicLibrary_.getLibrary()
+		List<TrackRow> list = musicLibrary_.getLibrary()
 				.stream()
-				.map(track -> new MusicLibraryTrackRow(track))
+				.map(track -> new TrackRow(track))
 				.collect(Collectors.toList());
 
 		// Make the list observable and add a listener for changes
-		ObservableList<MusicLibraryTrackRow> obsList = FXCollections.observableArrayList(list);
-		obsList.addListener(new ListChangeListener<MusicLibraryTrackRow>()
+		ObservableList<TrackRow> obsList = FXCollections.observableArrayList(list);
+		obsList.addListener(new ListChangeListener<TrackRow>()
 		{
 			/**
 			 * @version 0.0.0.20170507
 			 * @since 0.0
 			 */
 			@Override
-			public void onChanged(Change<? extends MusicLibraryTrackRow> change)
+			public void onChanged(Change<? extends TrackRow> change)
 			{
 				// TODO This change event doesn't seem to get hit ever
 				while (change.next())
 				{
-					getSystemLogger().debug("Refreshing table after MusicLibraryTrackRow change event");
+					logger_.debug("Refreshing table after MusicLibraryTrackRow change event");
 					musicLibraryTable_.refresh();
 				}
 			}
 		});
 
-		getSystemLogger().debug("Created " + obsList.size() + " rows for library table view");
+		logger_.debug("Created " + obsList.size() + " rows for library table view");
 
 		return obsList;
 	}
@@ -454,10 +458,10 @@ public class SystemController extends AbstractController implements FxmlControll
 	 * @version 0.0.0.20170503
 	 * @since 0.0
 	 */
-	private Optional<MusicLibraryTrack> loadDefaultTrack()
+	private Optional<Track> loadDefaultTrack()
 	{
 		String defaultMedia;
-		MusicLibraryTrack defaultSong;
+		Track defaultSong;
 		if(!musicLibrary_.isEmpty())
 		{
 			defaultSong = musicLibrary_.getFirst();
@@ -472,66 +476,86 @@ public class SystemController extends AbstractController implements FxmlControll
 		Media media = new Media(defaultMedia);
 		systemPlayer_ = new MediaPlayer(media);
 
-		getSystemLogger().debug("Loaded default track: " + defaultMedia);
+		logger_.debug("Loaded default track: " + defaultMedia);
 
 		return Optional.ofNullable(defaultSong);
 	}
 
 	/**
 	 * Sets up the cell values in each column with observable
-	 * string properties in the {@link MusicLibraryTrackRow}
+	 * string properties in the {@link TrackRow}
 	 *
 	 * @version 0.0.0.20170503
 	 * @since 0.0
 	 */
 	private void setupCellValueFactories()
 	{
-		getSystemLogger().debug("Setting up cell value factories");
+		logger_.debug("Setting up cell value factories");
 		colTitle_.setCellValueFactory(
-				new Callback<CellDataFeatures<MusicLibraryTrackRow, String>, ObservableValue<String>>()
+				new Callback<CellDataFeatures<TrackRow, String>, ObservableValue<String>>()
 				{
+					/**
+					 * @version 0.0.0.20170503
+					 * @since 0.0
+					 */
 					@Override
-					public ObservableValue<String> call(CellDataFeatures<MusicLibraryTrackRow, String> row)
+					public ObservableValue<String> call(CellDataFeatures<TrackRow, String> row)
 					{
 						return row.getValue().titleProperty();
 					}
 				});
 
 		colArtist_.setCellValueFactory(
-				new Callback<CellDataFeatures<MusicLibraryTrackRow, String>, ObservableValue<String>>()
+				new Callback<CellDataFeatures<TrackRow, String>, ObservableValue<String>>()
 				{
+					/**
+					 * @version 0.0.0.20170503
+					 * @since 0.0
+					 */
 					@Override
-					public ObservableValue<String> call(CellDataFeatures<MusicLibraryTrackRow, String> row)
+					public ObservableValue<String> call(CellDataFeatures<TrackRow, String> row)
 					{
 						return row.getValue().artistProperty();
 					}
 				});
 
 		colAlbum_.setCellValueFactory(
-				new Callback<CellDataFeatures<MusicLibraryTrackRow, String>, ObservableValue<String>>()
+				new Callback<CellDataFeatures<TrackRow, String>, ObservableValue<String>>()
 				{
+					/**
+					 * @version 0.0.0.20170503
+					 * @since 0.0
+					 */
 					@Override
-					public ObservableValue<String> call(CellDataFeatures<MusicLibraryTrackRow, String> row)
+					public ObservableValue<String> call(CellDataFeatures<TrackRow, String> row)
 					{
 						return row.getValue().albumProperty();
 					}
 				});
 
 		colGenre_.setCellValueFactory(
-				new Callback<CellDataFeatures<MusicLibraryTrackRow, String>, ObservableValue<String>>()
+				new Callback<CellDataFeatures<TrackRow, String>, ObservableValue<String>>()
 				{
+					/**
+					 * @version 0.0.0.20170503
+					 * @since 0.0
+					 */
 					@Override
-					public ObservableValue<String> call(CellDataFeatures<MusicLibraryTrackRow, String> row)
+					public ObservableValue<String> call(CellDataFeatures<TrackRow, String> row)
 					{
 						return row.getValue().genreProperty();
 					}
 				});
 
 		colYear_.setCellValueFactory(
-				new Callback<CellDataFeatures<MusicLibraryTrackRow, String>, ObservableValue<String>>()
+				new Callback<CellDataFeatures<TrackRow, String>, ObservableValue<String>>()
 				{
+					/**
+					 * @version 0.0.0.20170503
+					 * @since 0.0
+					 */
 					@Override
-					public ObservableValue<String> call(CellDataFeatures<MusicLibraryTrackRow, String> row)
+					public ObservableValue<String> call(CellDataFeatures<TrackRow, String> row)
 					{
 						return row.getValue().yearProperty();
 					}
@@ -544,21 +568,21 @@ public class SystemController extends AbstractController implements FxmlControll
 	 *
 	 * @see {@link OodioKeyEventHandler}
 	 *
-	 * @version 0.0.0.20170509
+	 * @version 0.0.1.20170510
 	 * @since 0.0
 	 */
 	private void setupRowEventHandlers()
 	{
 		musicLibraryTable_.setRowFactory(tableView -> {
-			TableRow<MusicLibraryTrackRow> row = new TableRow<>();
-			row.setOnMouseClicked(event -> {
-				if(event.getClickCount() == 2 && (!row.isEmpty()))
+			TableRow<TrackRow> tableRow = new TableRow<>();
+			tableRow.setOnMouseClicked(event -> {
+				if(event.getClickCount() == 2 && (!tableRow.isEmpty()))
 				{
-					playNewTrack(row.getItem());
+					playNewTrack(tableRow.getItem().getTrack());
 				}
 			});
 
-			return row;
+			return tableRow;
 		});
 
 		musicLibraryTable_.setOnKeyPressed(new EventHandler<KeyEvent>()
@@ -570,11 +594,11 @@ public class SystemController extends AbstractController implements FxmlControll
 			@Override
 			public void handle(KeyEvent keyEvent)
 			{
-				MusicLibraryTrackRow row = musicLibraryTable_.getSelectionModel().getSelectedItem();
+				TrackRow row = musicLibraryTable_.getSelectionModel().getSelectedItem();
 				if(keyEvent.getCode().equals(KeyCode.ENTER))
 				{
 					// Play a new track
-					playNewTrack(row);
+					playNewTrack(row.getTrack());
 				}
 				else if(keyEvent.getCode().equals(KeyCode.SPACE))
 				{
@@ -593,7 +617,7 @@ public class SystemController extends AbstractController implements FxmlControll
 					else
 					{
 						// Play the highlighted track, no track is loaded and the hello world is not loaded
-						playNewTrack(row);
+						playNewTrack(row.getTrack());
 					}
 				}
 			}
@@ -638,47 +662,33 @@ public class SystemController extends AbstractController implements FxmlControll
 	private void populateMusicLibraryTable()
 	{
 		// Get all the rows to add to the table
-		ObservableList<MusicLibraryTrackRow> observableRowList = createMusicLibraryTrackRows();
+		ObservableList<TrackRow> observableRowList = createMusicLibraryTrackRows();
 
 		musicLibraryTable_.getItems().addAll(observableRowList);
 		musicLibraryTable_.refresh();
 	}
 
 	/**
-	 * Plays the track contained in the passed row. Stops any already playing track first
+	 * Plays the track. Stops any already playing track first
 	 *
-	 * @version 0.0.0.20170507
-	 * @since 0.0
-	 *
-	 * @param row
-	 *            the row in the table view
-	 */
-	private void playNewTrack(MusicLibraryTrackRow row)
-	{
-		Media media = new Media(row.getTrack().getFilePath().toUri().toString());
-
-		systemPlayer_.stop();
-		systemPlayer_ = new MediaPlayer(media);
-
-		currentTrack_ = Optional.of(row.getTrack());
-
-		refreshCurrentTrackDisplay();
-
-		systemPlayer_.play();
-	}
-
-	/**
-	 * Pass-through to {@link #playNewTrack(MusicLibraryTrackRow)} plays the passed track
-	 *
-	 * @version 0.0.0.20170507
+	 * @version 1.0.0.20170510
 	 * @since 0.0
 	 *
 	 * @param track
 	 *            the track to play
 	 */
-	private void playNewTrack(MusicLibraryTrack track)
+	private void playNewTrack(Track track)
 	{
-		playNewTrack(new MusicLibraryTrackRow(track));
+		Media media = new Media(track.getFilePath().toUri().toString());
+
+		systemPlayer_.stop();
+		systemPlayer_ = new MediaPlayer(media);
+
+		currentTrack_ = Optional.of(track);
+
+		refreshCurrentTrackDisplay();
+
+		systemPlayer_.play();
 	}
 
 	/**
