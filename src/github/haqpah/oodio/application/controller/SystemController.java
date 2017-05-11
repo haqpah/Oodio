@@ -439,13 +439,13 @@ public class SystemController extends AbstractController implements FxmlControll
 				// TODO This change event doesn't seem to get hit ever
 				while (change.next())
 				{
-					logger_.debug("Refreshing table after MusicLibraryTrackRow change event");
+					logger_.info("Refreshing table after MusicLibraryTrackRow change event");
 					musicLibraryTable_.refresh();
 				}
 			}
 		});
 
-		logger_.debug("Created " + obsList.size() + " rows for library table view");
+		logger_.info("Created " + obsList.size() + " rows for library table view");
 
 		return obsList;
 	}
@@ -476,7 +476,7 @@ public class SystemController extends AbstractController implements FxmlControll
 		Media media = new Media(defaultMedia);
 		systemPlayer_ = new MediaPlayer(media);
 
-		logger_.debug("Loaded default track: " + defaultMedia);
+		logger_.info("Loaded default track: " + defaultMedia);
 
 		return Optional.ofNullable(defaultSong);
 	}
@@ -490,7 +490,7 @@ public class SystemController extends AbstractController implements FxmlControll
 	 */
 	private void setupCellValueFactories()
 	{
-		logger_.debug("Setting up cell value factories");
+		logger_.info("Setting up cell value factories");
 		colTitle_.setCellValueFactory(
 				new Callback<CellDataFeatures<TrackRow, String>, ObservableValue<String>>()
 				{

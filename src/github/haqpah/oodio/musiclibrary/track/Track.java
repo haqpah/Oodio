@@ -87,7 +87,7 @@ public class Track
 		}
 		catch (MediaException e)
 		{
-			logger_.debug("Could not create new music library track with URI\n\t" + filePathString);
+			logger_.info("Could not create new music library track with URI\n\t" + filePathString);
 		}
 
 		media.getMetadata().addListener((MapChangeListener<? super String, ? super Object>) c -> {

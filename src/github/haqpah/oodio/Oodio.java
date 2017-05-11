@@ -48,8 +48,7 @@ public class Oodio extends Application
 	 */
 	public static void main(String[] args)
 	{
-		logger_.info(APPLICATION_NAME_ + " has begun execution");
-		logger_.info("Launching application");
+		logger_.error(APPLICATION_NAME_ + " has begun execution");
 
 		launch();
 	}

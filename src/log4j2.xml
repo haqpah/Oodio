@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- DO NOT MOVE THIS FILE -->
+<!-- DO NOT MOVE THIS FILE -->
+<!-- DO NOT MOVE THIS FILE -->
+<!-- DO NOT MOVE THIS FILE -->
+<!-- DO NOT MOVE THIS FILE -->
+<Configuration>
+  	<Appenders>
+    	<Console name="SysOut" target="SYSTEM_OUT">
+      		<PatternLayout pattern="[%level] %d{hh:mm:ss.SSS} %logger%n%msg%n" />
+      		<Filters>
+				<ThresholdFilter level="ERROR" onMatch="DENY" onMismatch="ACCEPT" />	
+			</Filters>
+    	</Console>
+    	<Console name="SysErr" target="SYSTEM_ERR">
+      		<PatternLayout pattern="[%level] %d{hh:mm:ss.SSS} %logger%n%msg%n" />
+      		<Filters>
+				<ThresholdFilter level="ERROR" onMatch="ACCEPT" />
+			</Filters>
+    	</Console>
+  </Appenders>
+  <Loggers>
+    <Root level="INFO"> <!-- info level logs and greater -->
+      <AppenderRef ref="SysOut" />
+      <AppenderRef ref="SysErr" />
+    </Root>
+  </Loggers>
+</Configuration>

@@ -66,7 +66,7 @@ public class MusicLibrary
 
 		discoverOrCreateMusicLibraryDirectory();
 
-		logger_.debug("Traversing music library directory");
+		logger_.info("Traversing music library directory");
 		DirectoryStream<Path> musicLibrary = Files.newDirectoryStream(SystemPathService.getMusicLibraryDirectory());
 		for(Path artistPath : musicLibrary)
 		{
@@ -82,7 +82,7 @@ public class MusicLibrary
 			}
 		}
 
-		logger_.debug("Music library loaded with " + musicLibrary_.size() + " tracks");
+		logger_.info("Music library loaded with " + musicLibrary_.size() + " tracks");
 	}
 
 	/**
