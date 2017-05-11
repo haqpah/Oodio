@@ -3,12 +3,10 @@ package github.haqpah.oodio;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import github.haqpah.oodio.application.controller.FxmlController;
 import github.haqpah.oodio.application.controller.SystemController;
 import github.haqpah.oodio.musiclibrary.MusicLibrary;
 import javafx.application.Application;
 import javafx.scene.Scene;
-import javafx.scene.layout.Pane;
 import javafx.stage.Stage;
 
 /**
@@ -48,7 +46,7 @@ public class Oodio extends Application
 	 */
 	public static void main(String[] args)
 	{
-		logger_.error(APPLICATION_NAME_ + " has begun execution");
+		logger_.info(APPLICATION_NAME_ + " has begun execution");
 
 		launch();
 	}
@@ -66,9 +64,12 @@ public class Oodio extends Application
 		{
 			MusicLibrary musicLibrary = new MusicLibrary();
 
-			FxmlController systemController = new SystemController(musicLibrary);
-			Pane root = systemController.getRootPane();
-			primaryStage.setScene(new Scene(root));
+			SystemController systemController = new SystemController(musicLibrary);
+
+			Scene scene = new Scene(systemController.getRootPane());
+			scene.setOnKeyTyped(systemController.getKeyEventHandler());
+
+			primaryStage.setScene(scene);
 		}
 		catch (Exception e)
 		{
@@ -77,6 +78,8 @@ public class Oodio extends Application
 
 		primaryStage.setTitle(APPLICATION_NAME_);
 		primaryStage.setMaximized(true);
+
+		logger_.info("Showing stage");
 		primaryStage.show();
 	}
 

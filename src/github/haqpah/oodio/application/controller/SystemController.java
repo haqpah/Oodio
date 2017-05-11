@@ -210,7 +210,7 @@ public class SystemController extends AbstractController implements FxmlControll
 		musicLibrary_ = musicLibrary;
 
 		setupCellValueFactories();
-		setupRowEventHandlers();
+		setupClickAndKeyEventHandlers();
 
 		populateMusicLibraryTable();
 
@@ -284,6 +284,7 @@ public class SystemController extends AbstractController implements FxmlControll
 				TrackRow row = new TrackRow(track);
 				musicLibraryTable_.getItems().add(row);
 				musicLibraryTable_.refresh();
+				logger_.info("Table refreshed");
 			}
 			catch (Exception e)
 			{
@@ -411,6 +412,59 @@ public class SystemController extends AbstractController implements FxmlControll
 	}
 
 	/**
+	 * Gets the key event handler for the system
+	 *
+	 * TODO Move this key event handler into a class
+	 *
+	 * @version 0.0.0.20170510
+	 * @since 0.0
+	 *
+	 * @return the handler
+	 */
+	public EventHandler<KeyEvent> getKeyEventHandler()
+	{
+		EventHandler<KeyEvent> handler = new EventHandler<KeyEvent>()
+		{
+			/**
+			 * @version 0.0.0.20170509
+			 * @since 0.0
+			 */
+			@Override
+			public void handle(KeyEvent keyEvent)
+			{
+				TrackRow row = musicLibraryTable_.getSelectionModel().getSelectedItem();
+				if(keyEvent.getCode().equals(KeyCode.ENTER))
+				{
+					// Play a new track
+					playNewTrack(row.getTrack());
+				}
+				else if(keyEvent.getCode().equals(KeyCode.SPACE))
+				{
+					if(systemPlayer_.getMedia() != null)
+					{
+						// Toggle the paused state of the player
+						if(systemPlayer_.statusProperty().getValue().equals(MediaPlayer.Status.PLAYING))
+						{
+							systemPlayer_.pause();
+						}
+						else
+						{
+							systemPlayer_.play();
+						}
+					}
+					else
+					{
+						// Play the highlighted track, no track is loaded and the hello world is not loaded
+						playNewTrack(row.getTrack());
+					}
+				}
+			}
+		};
+
+		return handler;
+	}
+
+	/**
 	 * Creates an {@link ObservableList} of populated rows that track metadata can be displayed on the {@link #musicLibraryTable_}.
 	 *
 	 * @version 0.0.0.20170503
@@ -439,8 +493,8 @@ public class SystemController extends AbstractController implements FxmlControll
 				// TODO This change event doesn't seem to get hit ever
 				while (change.next())
 				{
-					logger_.info("Refreshing table after MusicLibraryTrackRow change event");
 					musicLibraryTable_.refresh();
+					logger_.info("Table refreshed");
 				}
 			}
 		});
@@ -571,7 +625,7 @@ public class SystemController extends AbstractController implements FxmlControll
 	 * @version 0.0.1.20170510
 	 * @since 0.0
 	 */
-	private void setupRowEventHandlers()
+	private void setupClickAndKeyEventHandlers()
 	{
 		musicLibraryTable_.setRowFactory(tableView -> {
 			TableRow<TrackRow> tableRow = new TableRow<>();
@@ -585,43 +639,9 @@ public class SystemController extends AbstractController implements FxmlControll
 			return tableRow;
 		});
 
-		musicLibraryTable_.setOnKeyPressed(new EventHandler<KeyEvent>()
-		{
-			/**
-			 * @version 0.0.0.20170509
-			 * @since 0.0
-			 */
-			@Override
-			public void handle(KeyEvent keyEvent)
-			{
-				TrackRow row = musicLibraryTable_.getSelectionModel().getSelectedItem();
-				if(keyEvent.getCode().equals(KeyCode.ENTER))
-				{
-					// Play a new track
-					playNewTrack(row.getTrack());
-				}
-				else if(keyEvent.getCode().equals(KeyCode.SPACE))
-				{
-					if(systemPlayer_.getMedia() != null)
-					{
-						// Toggle the paused state of the player
-						if(systemPlayer_.statusProperty().getValue().equals(MediaPlayer.Status.PLAYING))
-						{
-							systemPlayer_.pause();
-						}
-						else
-						{
-							systemPlayer_.play();
-						}
-					}
-					else
-					{
-						// Play the highlighted track, no track is loaded and the hello world is not loaded
-						playNewTrack(row.getTrack());
-					}
-				}
-			}
-		});
+		EventHandler<KeyEvent> handler = getKeyEventHandler();
+
+		musicLibraryTable_.setOnKeyPressed(handler);
 	}
 
 	/**
@@ -666,6 +686,7 @@ public class SystemController extends AbstractController implements FxmlControll
 
 		musicLibraryTable_.getItems().addAll(observableRowList);
 		musicLibraryTable_.refresh();
+		logger_.info("Table refreshed");
 	}
 
 	/**
